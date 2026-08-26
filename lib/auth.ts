@@ -4,6 +4,8 @@ import { Pool } from "pg"
 import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
+const resendFrom =
+  process.env.RESEND_FROM_EMAIL ?? "Chatbot <onboarding@resend.dev>"
 
 export const auth = betterAuth({
   database: new Pool({
@@ -21,7 +23,7 @@ export const auth = betterAuth({
       allowedAttempts: 3,
       async sendVerificationOTP({ email, otp, type }) {
         void resend.emails.send({
-          from: "Chatbot <onboarding@resend.dev>",
+          from: resendFrom,
           to: email,
           subject:
             type === "sign-in" ? "Your sign-in code" : "Your verification code",
