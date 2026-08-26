@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,8 +11,24 @@ interface OtpFormProps {
   email: string
 }
 
+const RESEND_COOLDOWN_SECONDS = 30
+
 export function OtpForm({ email }: OtpFormProps) {
   const router = useRouter()
+  const [resendCooldown, setResendCooldown] = useState(
+    RESEND_COOLDOWN_SECONDS,
+  )
+  const [isResending, setIsResending] = useState(false)
+
+  useEffect(() => {
+    if (resendCooldown === 0) return
+
+    const timer = window.setInterval(() => {
+      setResendCooldown((current) => Math.max(0, current - 1))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [resendCooldown])
 
   const form = useForm<OtpInput>({
     resolver: zodResolver(otpSchema),
@@ -66,6 +83,31 @@ export function OtpForm({ email }: OtpFormProps) {
     router.replace(`/login/password?email=${encodeURIComponent(email)}`)
   }
 
+  const onResend = async () => {
+    if (!email || resendCooldown > 0 || isResending) return
+
+    form.clearErrors("root")
+    setIsResending(true)
+
+    const { error } = await authClient.emailOtp.sendVerificationOtp({
+      email,
+      type: "sign-in",
+    })
+
+    setIsResending(false)
+
+    if (error) {
+      form.setError("root", {
+        type: "server",
+        message: error.message || "Unable to resend verification code.",
+      })
+      return
+    }
+
+    setResendCooldown(RESEND_COOLDOWN_SECONDS)
+    form.reset({ otp: "" })
+  }
+
   const {
     register,
     handleSubmit,
@@ -98,6 +140,18 @@ export function OtpForm({ email }: OtpFormProps) {
 
       <button type="submit" disabled={!isValid || isSubmitting}>
         {isSubmitting ? "Verifying..." : "Verify"}
+      </button>
+
+      <button
+        type="button"
+        disabled={resendCooldown > 0 || isResending}
+        onClick={onResend}
+      >
+        {isResending
+          ? "Sending..."
+          : resendCooldown > 0
+            ? `Resend code in ${resendCooldown}s`
+            : "Resend code"}
       </button>
     </form>
   )
