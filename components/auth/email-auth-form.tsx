@@ -43,30 +43,36 @@ export function EmailAuthForm() {
   } = form
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div>
-        <label htmlFor="auth-email">Email</label>
-        <input
-          id="auth-email"
-          type="email"
-          autoComplete="email"
-          autoFocus
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "auth-email-error" : undefined}
-          {...register("email")}
-        />
-        {errors.email && (
-          <p id="auth-email-error" role="alert">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div>
+          <label htmlFor="auth-email">Email</label>
+          <input
+            id="auth-email"
+            type="email"
+            autoComplete="email"
+            autoFocus
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "auth-email-error" : undefined}
+            {...register("email")}
+          />
+          {errors.email && (
+            <p id="auth-email-error" role="alert">
+              {errors.email.message}
+            </p>
+          )}
+        </div>
 
-      {errors.root && <p role="alert">{errors.root.message}</p>}
+        {errors.root && <p role="alert">{errors.root.message}</p>}
 
-      <button type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting ? "Sending code..." : "Continue"}
+        <button type="submit" disabled={!isValid || isSubmitting}>
+          {isSubmitting ? "Sending code..." : "Continue with email"}
+        </button>
+      </form>
+
+      <button type="button" disabled>
+        Continue with Google
       </button>
-    </form>
+    </div>
   )
 }
