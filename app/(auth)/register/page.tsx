@@ -1,11 +1,11 @@
-import { LoginForm } from "@/components/auth/login-form";
+import { EmailAuthForm } from "@/components/auth/email-auth-form"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main>
-      <h1>Sign in</h1>
-      <p>Sign in to continue.</p>
-      <LoginForm />
+      <h1>Continue with email</h1>
+      <p>Enter your email to continue.</p>
+      <EmailAuthForm />
     </main>
-  );
+  )
 }
