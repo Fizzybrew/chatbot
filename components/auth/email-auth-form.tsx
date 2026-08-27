@@ -33,7 +33,23 @@ export function EmailAuthForm() {
       return
     }
 
-    router.push(`/login/verify?email=${encodeURIComponent(email)}`)
+    router.push(`/auth/verify?email=${encodeURIComponent(email)}`)
+  }
+
+  const handleGoogleSignIn = async () => {
+    form.clearErrors("root")
+
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    })
+
+    if (error) {
+      form.setError("root", {
+        type: "server",
+        message: error.message || "Unable to continue with Google.",
+      })
+    }
   }
 
   const {
@@ -44,6 +60,12 @@ export function EmailAuthForm() {
 
   return (
     <div>
+      <button type="button" onClick={handleGoogleSignIn}>
+        Continue with Google
+      </button>
+
+      <div>or</div>
+
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div>
           <label htmlFor="auth-email">Email</label>
@@ -70,8 +92,8 @@ export function EmailAuthForm() {
         </button>
       </form>
 
-      <button type="button" disabled>
-        Continue with Google
+      <button type="button" onClick={() => router.push("/auth/password")}>
+        Sign in with password
       </button>
     </div>
   )
