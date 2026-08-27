@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
@@ -57,13 +57,7 @@ export function EmailAuthForm() {
     }
   }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isSubmitted },
-  } = form
-
-  const showEmailError = isSubmitted && errors.email
+  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
 
   return (
     <div className="w-full max-w-sm space-y-6">
@@ -85,23 +79,33 @@ export function EmailAuthForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="auth-email">Email</FieldLabel>
-            <Input
-              id="auth-email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              aria-invalid={!!showEmailError}
-              aria-describedby={showEmailError ? "auth-email-error" : undefined}
-              {...register("email")}
-            />
-            {showEmailError && (
-              <FieldError id="auth-email-error">
-                {errors.email?.message}
-              </FieldError>
-            )}
-          </Field>
+          <Controller
+            name="email"
+            control={control}
+            render={({ field, fieldState }) => {
+              const showError = isSubmitted && fieldState.error
+
+              return (
+                <Field data-invalid={!!showError}>
+                  <FieldLabel htmlFor="auth-email">Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id="auth-email"
+                    type="email"
+                    autoComplete="email"
+                    autoFocus
+                    aria-invalid={!!showError}
+                    aria-describedby={showError ? "auth-email-error" : undefined}
+                  />
+                  {showError && (
+                    <FieldError id="auth-email-error">
+                      {fieldState.error?.message}
+                    </FieldError>
+                  )}
+                </Field>
+              )
+            }}
+          />
 
           {isSubmitted && errors.root && (
             <FieldError>{errors.root.message}</FieldError>
