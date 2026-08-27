@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 
@@ -51,52 +51,65 @@ export function PasswordSignInForm() {
     router.refresh()
   }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isSubmitted },
-  } = form
-
-  const showEmailError = isSubmitted && errors.email
-  const showPasswordError = isSubmitted && errors.password
+  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="password-email">Email</FieldLabel>
-          <Input
-            id="password-email"
-            type="email"
-            autoComplete="email"
-            autoFocus
-            aria-invalid={!!showEmailError}
-            aria-describedby={showEmailError ? "password-email-error" : undefined}
-            {...register("email")}
-          />
-          {showEmailError && (
-            <FieldError id="password-email-error">
-              {errors.email?.message}
-            </FieldError>
-          )}
-        </Field>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState }) => {
+            const showError = isSubmitted && fieldState.error
 
-        <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            aria-invalid={!!showPasswordError}
-            aria-describedby={showPasswordError ? "password-error" : undefined}
-            {...register("password")}
-          />
-          {showPasswordError && (
-            <FieldError id="password-error">
-              {errors.password?.message}
-            </FieldError>
-          )}
-        </Field>
+            return (
+              <Field data-invalid={!!showError}>
+                <FieldLabel htmlFor="password-email">Email</FieldLabel>
+                <Input
+                  {...field}
+                  id="password-email"
+                  type="email"
+                  autoComplete="email"
+                  autoFocus
+                  aria-invalid={!!showError}
+                  aria-describedby={showError ? "password-email-error" : undefined}
+                />
+                {showError && (
+                  <FieldError id="password-email-error">
+                    {fieldState.error?.message}
+                  </FieldError>
+                )}
+              </Field>
+            )
+          }}
+        />
+
+        <Controller
+          name="password"
+          control={control}
+          render={({ field, fieldState }) => {
+            const showError = isSubmitted && fieldState.error
+
+            return (
+              <Field data-invalid={!!showError}>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  {...field}
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={!!showError}
+                  aria-describedby={showError ? "password-error" : undefined}
+                />
+                {showError && (
+                  <FieldError id="password-error">
+                    {fieldState.error?.message}
+                  </FieldError>
+                )}
+              </Field>
+            )
+          }}
+        />
 
         {isSubmitted && errors.root && (
           <FieldError>{errors.root.message}</FieldError>
