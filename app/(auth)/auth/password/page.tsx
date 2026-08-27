@@ -1,11 +1,11 @@
-import { SetPasswordForm } from "@/components/auth/set-password-form"
+import { PasswordSignInForm } from "@/components/auth/password-sign-in-form"
 
-export default function SetPasswordPage() {
+export default function PasswordSignInPage() {
   return (
     <main>
-      <h1>Create a password</h1>
-      <p>Set a password for your new account.</p>
-      <SetPasswordForm />
+      <h1>Sign in with password</h1>
+      <p>Use your email and password to sign in.</p>
+      <PasswordSignInForm />
     </main>
   )
 }
