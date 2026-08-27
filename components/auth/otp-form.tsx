@@ -4,10 +4,16 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { REGEXP_ONLY_DIGITS } from "input-otp"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
 import { authClient } from "@/lib/auth-client"
 import { otpSchema, type OtpInput } from "@/lib/auth-schemas"
 
@@ -16,6 +22,7 @@ interface OtpFormProps {
 }
 
 const RESEND_COOLDOWN_SECONDS = 30
+const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
 
 export function OtpForm({ email }: OtpFormProps) {
   const router = useRouter()
@@ -36,9 +43,7 @@ export function OtpForm({ email }: OtpFormProps) {
     resolver: zodResolver(otpSchema),
     mode: "onSubmit",
     reValidateMode: "onChange",
-    defaultValues: {
-      otp: "",
-    },
+    defaultValues: { otp: "" },
   })
 
   const onSubmit = async ({ otp }: OtpInput) => {
@@ -59,6 +64,7 @@ export function OtpForm({ email }: OtpFormProps) {
       return
     }
 
+    sessionStorage.removeItem(AUTH_EMAIL_STORAGE_KEY)
     router.replace("/")
     router.refresh()
   }
@@ -88,7 +94,11 @@ export function OtpForm({ email }: OtpFormProps) {
     form.reset({ otp: "" })
   }
 
-  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting, isSubmitted },
+  } = form
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
@@ -101,19 +111,33 @@ export function OtpForm({ email }: OtpFormProps) {
 
             return (
               <Field data-invalid={!!showError}>
-                <FieldLabel htmlFor="auth-otp">Verification code</FieldLabel>
-                <Input
-                  {...field}
+                <FieldLabel htmlFor="auth-otp" className="sr-only">
+                  Verification code
+                </FieldLabel>
+                <InputOTP
                   id="auth-otp"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  autoFocus
                   maxLength={6}
-                  placeholder="000000"
+                  pattern={REGEXP_ONLY_DIGITS}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  disabled={isSubmitting || isResending}
+                  autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
-                />
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
                 {showError && (
                   <FieldError id="auth-otp-error">
                     {fieldState.error?.message}
