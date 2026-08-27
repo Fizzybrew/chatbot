@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
@@ -19,9 +19,7 @@ const RESEND_COOLDOWN_SECONDS = 30
 
 export function OtpForm({ email }: OtpFormProps) {
   const router = useRouter()
-  const [resendCooldown, setResendCooldown] = useState(
-    RESEND_COOLDOWN_SECONDS,
-  )
+  const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS)
   const [isResending, setIsResending] = useState(false)
 
   useEffect(() => {
@@ -51,10 +49,7 @@ export function OtpForm({ email }: OtpFormProps) {
       return
     }
 
-    const { error } = await authClient.signIn.emailOtp({
-      email,
-      otp,
-    })
+    const { error } = await authClient.signIn.emailOtp({ email, otp })
 
     if (error) {
       form.setError("root", {
@@ -93,35 +88,41 @@ export function OtpForm({ email }: OtpFormProps) {
     form.reset({ otp: "" })
   }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isSubmitted },
-  } = form
-
-  const showOtpError = isSubmitted && errors.otp
+  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="auth-otp">Verification code</FieldLabel>
-          <Input
-            id="auth-otp"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            autoFocus
-            maxLength={6}
-            placeholder="000000"
-            aria-invalid={!!showOtpError}
-            aria-describedby={showOtpError ? "auth-otp-error" : undefined}
-            {...register("otp")}
-          />
-          {showOtpError && (
-            <FieldError id="auth-otp-error">{errors.otp?.message}</FieldError>
-          )}
-        </Field>
+        <Controller
+          name="otp"
+          control={control}
+          render={({ field, fieldState }) => {
+            const showError = isSubmitted && fieldState.error
+
+            return (
+              <Field data-invalid={!!showError}>
+                <FieldLabel htmlFor="auth-otp">Verification code</FieldLabel>
+                <Input
+                  {...field}
+                  id="auth-otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  maxLength={6}
+                  placeholder="000000"
+                  aria-invalid={!!showError}
+                  aria-describedby={showError ? "auth-otp-error" : undefined}
+                />
+                {showError && (
+                  <FieldError id="auth-otp-error">
+                    {fieldState.error?.message}
+                  </FieldError>
+                )}
+              </Field>
+            )
+          }}
+        />
 
         {isSubmitted && errors.root && (
           <FieldError>{errors.root.message}</FieldError>
