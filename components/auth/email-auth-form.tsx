@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
+const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
+
 export function EmailAuthForm() {
   const router = useRouter()
 
@@ -17,9 +19,7 @@ export function EmailAuthForm() {
     resolver: zodResolver(emailSchema),
     mode: "onSubmit",
     reValidateMode: "onChange",
-    defaultValues: {
-      email: "",
-    },
+    defaultValues: { email: "" },
   })
 
   const onSubmit = async ({ email }: EmailInput) => {
@@ -38,7 +38,8 @@ export function EmailAuthForm() {
       return
     }
 
-    router.push(`/auth/verify?email=${encodeURIComponent(email)}`)
+    sessionStorage.setItem(AUTH_EMAIL_STORAGE_KEY, email)
+    router.push("/auth/verify-email")
   }
 
   const handleGoogleSignIn = async () => {
@@ -57,7 +58,11 @@ export function EmailAuthForm() {
     }
   }
 
-  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting, isSubmitted },
+  } = form
 
   return (
     <div className="w-full max-w-sm space-y-6">
