@@ -42,7 +42,7 @@ export function OtpForm({ email }: OtpFormProps) {
     form.clearErrors("root")
 
     if (!email) {
-      router.replace("/login")
+      router.replace("/auth")
       return
     }
 
@@ -59,28 +59,8 @@ export function OtpForm({ email }: OtpFormProps) {
       return
     }
 
-    const { data: accounts, error: accountsError } =
-      await authClient.listAccounts()
-
-    if (accountsError) {
-      form.setError("root", {
-        type: "server",
-        message: accountsError.message || "Unable to load your account.",
-      })
-      return
-    }
-
-    const hasPassword = accounts?.some(
-      (account) => account.providerId === "credential",
-    )
-
-    if (hasPassword) {
-      router.replace("/")
-      router.refresh()
-      return
-    }
-
-    router.replace(`/login/password?email=${encodeURIComponent(email)}`)
+    router.replace("/")
+    router.refresh()
   }
 
   const onResend = async () => {
