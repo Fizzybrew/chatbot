@@ -3,6 +3,10 @@
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
+import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
@@ -11,7 +15,8 @@ export function EmailAuthForm() {
 
   const form = useForm<EmailInput>({
     resolver: zodResolver(emailSchema),
-    mode: "onChange",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       email: "",
     },
@@ -55,46 +60,68 @@ export function EmailAuthForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitted },
   } = form
 
-  return (
-    <div>
-      <button type="button" onClick={handleGoogleSignIn}>
-        Continue with Google
-      </button>
+  const showEmailError = isSubmitted && errors.email
 
-      <div>or</div>
+  return (
+    <div className="w-full max-w-sm space-y-6">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleSignIn}
+        disabled={isSubmitting}
+      >
+        Continue with Google
+      </Button>
+
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <div className="h-px flex-1 bg-border" />
+        <span>or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div>
-          <label htmlFor="auth-email">Email</label>
-          <input
-            id="auth-email"
-            type="email"
-            autoComplete="email"
-            autoFocus
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? "auth-email-error" : undefined}
-            {...register("email")}
-          />
-          {errors.email && (
-            <p id="auth-email-error" role="alert">
-              {errors.email.message}
-            </p>
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="auth-email">Email</FieldLabel>
+            <Input
+              id="auth-email"
+              type="email"
+              autoComplete="email"
+              autoFocus
+              aria-invalid={!!showEmailError}
+              aria-describedby={showEmailError ? "auth-email-error" : undefined}
+              {...register("email")}
+            />
+            {showEmailError && (
+              <FieldError id="auth-email-error">
+                {errors.email?.message}
+              </FieldError>
+            )}
+          </Field>
+
+          {isSubmitted && errors.root && (
+            <FieldError>{errors.root.message}</FieldError>
           )}
-        </div>
 
-        {errors.root && <p role="alert">{errors.root.message}</p>}
-
-        <button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? "Sending code..." : "Continue with email"}
-        </button>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Sending code..." : "Continue with email"}
+          </Button>
+        </FieldGroup>
       </form>
 
-      <button type="button" onClick={() => router.push("/auth/password")}>
+      <Button
+        type="button"
+        variant="link"
+        className="w-full"
+        onClick={() => router.push("/auth/password")}
+        disabled={isSubmitting}
+      >
         Sign in with password
-      </button>
+      </Button>
     </div>
   )
 }
