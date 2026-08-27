@@ -3,9 +3,13 @@
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, passwordSchema } from "@/lib/auth-schemas"
-import { z } from "zod"
 
 const passwordSignInSchema = emailSchema.extend({
   password: passwordSchema.shape.password,
@@ -18,7 +22,8 @@ export function PasswordSignInForm() {
 
   const form = useForm<PasswordSignInInput>({
     resolver: zodResolver(passwordSignInSchema),
-    mode: "onChange",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       email: "",
       password: "",
@@ -49,55 +54,70 @@ export function PasswordSignInForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitted },
   } = form
 
+  const showEmailError = isSubmitted && errors.email
+  const showPasswordError = isSubmitted && errors.password
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div>
-        <label htmlFor="password-email">Email</label>
-        <input
-          id="password-email"
-          type="email"
-          autoComplete="email"
-          autoFocus
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "password-email-error" : undefined}
-          {...register("email")}
-        />
-        {errors.email && (
-          <p id="password-email-error" role="alert">
-            {errors.email.message}
-          </p>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="password-email">Email</FieldLabel>
+          <Input
+            id="password-email"
+            type="email"
+            autoComplete="email"
+            autoFocus
+            aria-invalid={!!showEmailError}
+            aria-describedby={showEmailError ? "password-email-error" : undefined}
+            {...register("email")}
+          />
+          {showEmailError && (
+            <FieldError id="password-email-error">
+              {errors.email?.message}
+            </FieldError>
+          )}
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            aria-invalid={!!showPasswordError}
+            aria-describedby={showPasswordError ? "password-error" : undefined}
+            {...register("password")}
+          />
+          {showPasswordError && (
+            <FieldError id="password-error">
+              {errors.password?.message}
+            </FieldError>
+          )}
+        </Field>
+
+        {isSubmitted && errors.root && (
+          <FieldError>{errors.root.message}</FieldError>
         )}
-      </div>
 
-      <div>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          aria-invalid={!!errors.password}
-          aria-describedby={errors.password ? "password-error" : undefined}
-          {...register("password")}
-        />
-        {errors.password && (
-          <p id="password-error" role="alert">
-            {errors.password.message}
-          </p>
-        )}
-      </div>
+        <FieldGroup className="gap-2">
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </Button>
 
-      {errors.root && <p role="alert">{errors.root.message}</p>}
-
-      <button type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting ? "Signing in..." : "Sign in"}
-      </button>
-
-      <button type="button" onClick={() => router.push("/auth")}>
-        Back to authentication
-      </button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push("/auth")}
+            disabled={isSubmitting}
+          >
+            Back to authentication
+          </Button>
+        </FieldGroup>
+      </FieldGroup>
     </form>
   )
 }
