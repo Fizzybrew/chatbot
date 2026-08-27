@@ -4,6 +4,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
+import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { otpSchema, type OtpInput } from "@/lib/auth-schemas"
 
@@ -32,7 +36,8 @@ export function OtpForm({ email }: OtpFormProps) {
 
   const form = useForm<OtpInput>({
     resolver: zodResolver(otpSchema),
-    mode: "onChange",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       otp: "",
     },
@@ -91,48 +96,57 @@ export function OtpForm({ email }: OtpFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitted },
   } = form
 
+  const showOtpError = isSubmitted && errors.otp
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div>
-        <label htmlFor="auth-otp">Verification code</label>
-        <input
-          id="auth-otp"
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          autoFocus
-          maxLength={6}
-          aria-invalid={!!errors.otp}
-          aria-describedby={errors.otp ? "auth-otp-error" : undefined}
-          {...register("otp")}
-        />
-        {errors.otp && (
-          <p id="auth-otp-error" role="alert">
-            {errors.otp.message}
-          </p>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="auth-otp">Verification code</FieldLabel>
+          <Input
+            id="auth-otp"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={6}
+            placeholder="000000"
+            aria-invalid={!!showOtpError}
+            aria-describedby={showOtpError ? "auth-otp-error" : undefined}
+            {...register("otp")}
+          />
+          {showOtpError && (
+            <FieldError id="auth-otp-error">{errors.otp?.message}</FieldError>
+          )}
+        </Field>
+
+        {isSubmitted && errors.root && (
+          <FieldError>{errors.root.message}</FieldError>
         )}
-      </div>
 
-      {errors.root && <p role="alert">{errors.root.message}</p>}
+        <FieldGroup className="gap-2">
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Verifying..." : "Verify"}
+          </Button>
 
-      <button type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting ? "Verifying..." : "Verify"}
-      </button>
-
-      <button
-        type="button"
-        disabled={resendCooldown > 0 || isResending}
-        onClick={onResend}
-      >
-        {isResending
-          ? "Sending..."
-          : resendCooldown > 0
-            ? `Resend code in ${resendCooldown}s`
-            : "Resend code"}
-      </button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={resendCooldown > 0 || isResending || isSubmitting}
+            onClick={onResend}
+          >
+            {isResending
+              ? "Sending..."
+              : resendCooldown > 0
+                ? `Resend code in ${resendCooldown}s`
+                : "Resend code"}
+          </Button>
+        </FieldGroup>
+      </FieldGroup>
     </form>
   )
 }
