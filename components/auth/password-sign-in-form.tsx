@@ -51,7 +51,11 @@ export function PasswordSignInForm() {
     router.refresh()
   }
 
-  const { handleSubmit, control, formState: { errors, isSubmitting, isSubmitted } } = form
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting, isSubmitted },
+  } = form
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
@@ -64,11 +68,14 @@ export function PasswordSignInForm() {
 
             return (
               <Field data-invalid={!!showError}>
-                <FieldLabel htmlFor="password-email">Email</FieldLabel>
+                <FieldLabel htmlFor="password-email" className="sr-only">
+                  Email
+                </FieldLabel>
                 <Input
                   {...field}
                   id="password-email"
                   type="email"
+                  placeholder="Email"
                   autoComplete="email"
                   autoFocus
                   aria-invalid={!!showError}
@@ -92,19 +99,20 @@ export function PasswordSignInForm() {
 
             return (
               <Field data-invalid={!!showError}>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <FieldLabel htmlFor="password" className="sr-only">
+                  Password
+                </FieldLabel>
                 <Input
                   {...field}
                   id="password"
                   type="password"
+                  placeholder="Password"
                   autoComplete="current-password"
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "password-error" : undefined}
                 />
                 {showError && (
-                  <FieldError id="password-error">
-                    {fieldState.error?.message}
-                  </FieldError>
+                  <FieldError id="password-error">{fieldState.error?.message}</FieldError>
                 )}
               </Field>
             )
