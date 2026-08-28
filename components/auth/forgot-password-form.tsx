@@ -80,7 +80,11 @@ export function ForgotPasswordForm() {
         />
 
         {isSubmitted && errors.root && (
-          <FieldError>{errors.root.message}</FieldError>
+          errors.root.type === "success" ? (
+            <p className="text-sm text-muted-foreground">{errors.root.message}</p>
+          ) : (
+            <FieldError>{errors.root.message}</FieldError>
+          )
         )}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
