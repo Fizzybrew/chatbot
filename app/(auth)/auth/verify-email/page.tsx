@@ -6,13 +6,16 @@ import { useRouter } from "next/navigation"
 import { OtpForm } from "@/components/auth/otp-form"
 
 const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
+const AUTH_EMAIL_LABEL_KEY = "auth:verification-email-label"
 
 export default function VerifyEmailPage() {
   const router = useRouter()
   const [email, setEmail] = useState<string | null>(null)
+  const [emailLabel, setEmailLabel] = useState<string | null>(null)
 
   useEffect(() => {
     const storedEmail = sessionStorage.getItem(AUTH_EMAIL_STORAGE_KEY)
+    const storedLabel = sessionStorage.getItem(AUTH_EMAIL_LABEL_KEY)
 
     if (!storedEmail) {
       router.replace("/auth")
@@ -20,6 +23,7 @@ export default function VerifyEmailPage() {
     }
 
     setEmail(storedEmail)
+    setEmailLabel(storedLabel ?? storedEmail)
   }, [router])
 
   if (!email) {
@@ -32,7 +36,7 @@ export default function VerifyEmailPage() {
         <header className="w-full space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
           <p className="text-sm text-muted-foreground">
-            Enter the 6-digit verification code sent to {email}.
+            Enter the 6-digit verification code sent to {emailLabel}.
           </p>
         </header>
 
