@@ -84,7 +84,7 @@ export function EmailAuthForm() {
       <Button
         type="button"
         variant="outline"
-        className="h-13 w-full rounded-full text-base"
+        className="h-13 rounded-full text-base w-full"
         onClick={handleGoogleSignIn}
         disabled={isLoading}
       >
@@ -115,7 +115,7 @@ export function EmailAuthForm() {
                     id="auth-email"
                     type="email"
                     placeholder="Email"
-                    className="h-13 w-full rounded-full text-base"
+                    className="h-13 rounded-full text-base w-full"
                     autoComplete="email"
                     autoFocus
                     aria-invalid={!!showError}
@@ -136,7 +136,11 @@ export function EmailAuthForm() {
             <FieldError>{errors.root.message}</FieldError>
           )}
 
-          <Button type="submit" className="h-13 w-full rounded-full text-base" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="h-13 rounded-full text-base w-full"
+            disabled={isLoading}
+          >
             {isSubmitting ? <Spinner /> : "Continue with email"}
           </Button>
         </FieldGroup>
@@ -145,7 +149,7 @@ export function EmailAuthForm() {
       <Button
         type="button"
         variant="link"
-        className="h-13 w-full rounded-full text-base"
+        className="h-13 rounded-full text-base w-full"
         onClick={() => router.push("/auth/password")}
         disabled={isLoading}
       >
