@@ -11,9 +11,9 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { otpSchema, type OtpInput } from "@/lib/auth-schemas"
 
@@ -101,8 +101,10 @@ export function OtpForm({ email }: OtpFormProps) {
     formState: { errors, isSubmitting, isSubmitted },
   } = form
 
+  const isLoading = isSubmitting || isResending
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
       <FieldGroup>
         <Controller
           name="otp"
@@ -122,21 +124,19 @@ export function OtpForm({ email }: OtpFormProps) {
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
-                  disabled={isSubmitting || isResending}
+                  disabled={isLoading}
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
+                  className="h-13 w-full rounded-full text-base"
                 >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                  </InputOTPGroup>
-                  <InputOTPSeparator />
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
+                  <InputOTPGroup className="w-full justify-between">
+                    <InputOTPSlot index={0} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot index={1} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot index={2} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot index={3} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot index={4} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot index={5} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
                   </InputOTPGroup>
                 </InputOTP>
                 {showError && (
@@ -154,19 +154,23 @@ export function OtpForm({ email }: OtpFormProps) {
         )}
 
         <FieldGroup className="gap-2">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Verifying..." : "Verify"}
+          <Button
+            type="submit"
+            className="h-13 w-full rounded-full text-base"
+            disabled={isLoading}
+          >
+            {isSubmitting ? <Spinner /> : "Verify"}
           </Button>
 
           <Button
             type="button"
             variant="outline"
-            className="w-full"
-            disabled={resendCooldown > 0 || isResending || isSubmitting}
+            className="h-13 w-full rounded-full text-base"
+            disabled={resendCooldown > 0 || isLoading}
             onClick={onResend}
           >
             {isResending
-              ? "Sending..."
+              ? <Spinner />
               : resendCooldown > 0
                 ? `Resend code in ${resendCooldown}s`
                 : "Resend code"}
@@ -175,8 +179,8 @@ export function OtpForm({ email }: OtpFormProps) {
           <Button
             type="button"
             variant="ghost"
-            className="w-full"
-            disabled={isSubmitting || isResending}
+            className="h-13 w-full rounded-full text-base"
+            disabled={isLoading}
             onClick={() => router.replace("/auth")}
           >
             Change email
