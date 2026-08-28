@@ -24,6 +24,7 @@ function maskEmail(email: string) {
 export function EmailAuthForm() {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isYandexLoading, setIsYandexLoading] = useState(false)
 
   const form = useForm<EmailInput>({
     resolver: zodResolver(emailSchema),
@@ -71,13 +72,31 @@ export function EmailAuthForm() {
     }
   }
 
+  const handleYandexSignIn = async () => {
+    form.clearErrors("root")
+    setIsYandexLoading(true)
+
+    const { error } = await authClient.signIn.social({
+      provider: "yandex",
+      callbackURL: "/",
+    })
+
+    if (error) {
+      setIsYandexLoading(false)
+      form.setError("root", {
+        type: "server",
+        message: error.message || "Unable to continue with Yandex.",
+      })
+    }
+  }
+
   const {
     handleSubmit,
     control,
     formState: { errors, isSubmitting, isSubmitted },
   } = form
 
-  const isLoading = isSubmitting || isGoogleLoading
+  const isLoading = isSubmitting || isGoogleLoading || isYandexLoading
 
   return (
     <div className="w-full max-w-85 space-y-4">
@@ -89,6 +108,16 @@ export function EmailAuthForm() {
         disabled={isLoading}
       >
         {isGoogleLoading ? <Spinner /> : "Continue with Google"}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="h-13 rounded-full text-base w-full"
+        onClick={handleYandexSignIn}
+        disabled={isLoading}
+      >
+        {isYandexLoading ? <Spinner /> : "Continue with Yandex"}
       </Button>
 
       <Button
