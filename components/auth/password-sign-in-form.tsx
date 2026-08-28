@@ -72,7 +72,7 @@ export function PasswordSignInForm() {
   } = form
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-85">
       <FieldGroup>
         <Controller
           name="email"

@@ -80,7 +80,7 @@ export function EmailAuthForm() {
   const isLoading = isSubmitting || isGoogleLoading
 
   return (
-    <div className="w-full max-w-[340px] space-y-6">
+    <div className="w-full max-w-85 space-y-4">
       <Button
         type="button"
         variant="outline"
@@ -89,6 +89,16 @@ export function EmailAuthForm() {
         disabled={isLoading}
       >
         {isGoogleLoading ? <Spinner /> : "Continue with Google"}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="h-13 rounded-full text-base w-full"
+        onClick={() => router.push("/auth/password")}
+        disabled={isLoading}
+      >
+        Continue with password
       </Button>
 
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -145,16 +155,6 @@ export function EmailAuthForm() {
           </Button>
         </FieldGroup>
       </form>
-
-      <Button
-        type="button"
-        variant="link"
-        className="h-13 rounded-full text-base w-full"
-        onClick={() => router.push("/auth/password")}
-        disabled={isLoading}
-      >
-        Continue with password
-      </Button>
     </div>
   )
 }

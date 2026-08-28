@@ -51,7 +51,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (success) {
     return (
-      <div className="w-full max-w-[340px] space-y-4 text-center">
+      <div className="w-full max-w-85 space-y-4 text-center">
         <p className="text-sm text-muted-foreground">
           Your password has been reset. You can now sign in with your new password.
         </p>
@@ -66,7 +66,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-85">
       <FieldGroup>
         <Controller
           name="password"

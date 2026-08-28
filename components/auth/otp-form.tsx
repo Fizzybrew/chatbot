@@ -107,7 +107,7 @@ export function OtpForm({ email }: OtpFormProps) {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="w-full max-w-[340px]"
+      className="w-full max-w-85"
     >
       <FieldGroup>
         <Controller
