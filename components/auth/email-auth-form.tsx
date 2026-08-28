@@ -12,6 +12,13 @@ import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
 const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
 
+function maskEmail(email: string) {
+  const [localPart, domain] = email.split("@")
+  if (!localPart || !domain) return email
+  if (localPart.length <= 2) return `${localPart[0] ?? ""}•••@${domain}`
+  return `${localPart[0]}${"•".repeat(Math.min(6, Math.max(2, localPart.length - 2)))}${localPart.at(-1)}@${domain}`
+}
+
 export function EmailAuthForm() {
   const router = useRouter()
 
@@ -39,6 +46,7 @@ export function EmailAuthForm() {
     }
 
     sessionStorage.setItem(AUTH_EMAIL_STORAGE_KEY, email)
+    sessionStorage.setItem("auth:verification-email-label", maskEmail(email))
     router.push("/auth/verify-email")
   }
 
