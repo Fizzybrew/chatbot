@@ -65,6 +65,7 @@ export function OtpForm({ email }: OtpFormProps) {
     }
 
     sessionStorage.removeItem(AUTH_EMAIL_STORAGE_KEY)
+    sessionStorage.removeItem("auth:verification-email-label")
     router.replace("/")
     router.refresh()
   }
@@ -169,6 +170,16 @@ export function OtpForm({ email }: OtpFormProps) {
               : resendCooldown > 0
                 ? `Resend code in ${resendCooldown}s`
                 : "Resend code"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            disabled={isSubmitting || isResending}
+            onClick={() => router.replace("/auth")}
+          >
+            Change email
           </Button>
         </FieldGroup>
       </FieldGroup>
