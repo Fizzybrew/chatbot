@@ -8,6 +8,7 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, passwordSchema } from "@/lib/auth-schemas"
 
@@ -58,7 +59,7 @@ export function PasswordSignInForm() {
   } = form
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
       <FieldGroup>
         <Controller
           name="email"
@@ -76,10 +77,12 @@ export function PasswordSignInForm() {
                   id="password-email"
                   type="email"
                   placeholder="Email"
+                  className="h-13 rounded-full text-base w-full"
                   autoComplete="email"
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "password-email-error" : undefined}
+                  disabled={isSubmitting}
                 />
                 {showError && (
                   <FieldError id="password-email-error">
@@ -107,9 +110,11 @@ export function PasswordSignInForm() {
                   id="password"
                   type="password"
                   placeholder="Password"
+                  className="h-13 rounded-full text-base w-full"
                   autoComplete="current-password"
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "password-error" : undefined}
+                  disabled={isSubmitting}
                 />
                 {showError && (
                   <FieldError id="password-error">{fieldState.error?.message}</FieldError>
@@ -122,7 +127,7 @@ export function PasswordSignInForm() {
         <Button
           type="button"
           variant="link"
-          className="w-fit self-end px-0"
+          className="h-13 rounded-full text-base w-full"
           onClick={() => router.push("/auth/forgot-password")}
           disabled={isSubmitting}
         >
@@ -133,21 +138,13 @@ export function PasswordSignInForm() {
           <FieldError>{errors.root.message}</FieldError>
         )}
 
-        <FieldGroup className="gap-2">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in..." : "Sign in"}
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => router.push("/auth")}
-            disabled={isSubmitting}
-          >
-            Back to authentication
-          </Button>
-        </FieldGroup>
+        <Button
+          type="submit"
+          className="h-13 rounded-full text-base w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <Spinner /> : "Sign in"}
+        </Button>
       </FieldGroup>
     </form>
   )
