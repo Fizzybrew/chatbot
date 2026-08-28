@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
@@ -46,7 +47,7 @@ export function ForgotPasswordForm() {
   } = form
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
       <FieldGroup>
         <Controller
           name="email"
@@ -64,10 +65,12 @@ export function ForgotPasswordForm() {
                   id="forgot-password-email"
                   type="email"
                   placeholder="Email"
+                  className="h-13 rounded-full text-base w-full"
                   autoComplete="email"
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "forgot-password-email-error" : undefined}
+                  disabled={isSubmitting}
                 />
                 {showError && (
                   <FieldError id="forgot-password-email-error">
@@ -87,8 +90,12 @@ export function ForgotPasswordForm() {
           )
         )}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Send reset link"}
+        <Button
+          type="submit"
+          className="h-13 rounded-full text-base w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <Spinner /> : "Send reset link"}
         </Button>
       </FieldGroup>
     </form>
