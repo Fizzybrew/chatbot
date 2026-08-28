@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { passwordSchema, type PasswordInput } from "@/lib/auth-schemas"
 
@@ -50,11 +51,14 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (success) {
     return (
-      <div className="w-full max-w-sm space-y-4 text-center">
+      <div className="w-full max-w-[340px] space-y-4 text-center">
         <p className="text-sm text-muted-foreground">
           Your password has been reset. You can now sign in with your new password.
         </p>
-        <Button className="w-full" onClick={() => router.replace("/auth/password")}>
+        <Button
+          className="h-13 rounded-full text-base w-full"
+          onClick={() => router.replace("/auth/password")}
+        >
           Sign in
         </Button>
       </div>
@@ -62,7 +66,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
       <FieldGroup>
         <Controller
           name="password"
@@ -80,10 +84,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   id="reset-password"
                   type="password"
                   placeholder="New password"
+                  className="h-13 rounded-full text-base w-full"
                   autoComplete="new-password"
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "reset-password-error" : undefined}
+                  disabled={isSubmitting}
                 />
                 {showError && (
                   <FieldError id="reset-password-error">
@@ -99,8 +105,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
           <FieldError>{errors.root.message}</FieldError>
         )}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Resetting..." : "Reset password"}
+        <Button
+          type="submit"
+          className="h-13 rounded-full text-base w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <Spinner /> : "Reset password"}
         </Button>
       </FieldGroup>
     </form>
