@@ -12,17 +12,17 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { emailSchema, passwordSchema } from "@/lib/auth-schemas"
 
-const passwordSignInSchema = emailSchema.extend({
+const passwordAuthSchema = emailSchema.extend({
   password: passwordSchema.shape.password,
 })
 
-type PasswordSignInInput = z.infer<typeof passwordSignInSchema>
+type PasswordAuthInput = z.infer<typeof passwordAuthSchema>
 
 export function PasswordSignInForm() {
   const router = useRouter()
 
-  const form = useForm<PasswordSignInInput>({
-    resolver: zodResolver(passwordSignInSchema),
+  const form = useForm<PasswordAuthInput>({
+    resolver: zodResolver(passwordAuthSchema),
     mode: "onSubmit",
     reValidateMode: "onChange",
     defaultValues: {
@@ -31,19 +31,32 @@ export function PasswordSignInForm() {
     },
   })
 
-  const onSubmit = async ({ email, password }: PasswordSignInInput) => {
+  const onSubmit = async ({ email, password }: PasswordAuthInput) => {
     form.clearErrors("root")
 
-    const { error } = await authClient.signIn.email({
+    const signUpResult = await authClient.signUp.email({
+      email,
+      password,
+      name: email.split("@")[0] || "User",
+      callbackURL: "/",
+    })
+
+    if (!signUpResult.error) {
+      router.replace("/")
+      router.refresh()
+      return
+    }
+
+    const signInResult = await authClient.signIn.email({
       email,
       password,
       callbackURL: "/",
     })
 
-    if (error) {
+    if (signInResult.error) {
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to sign in with password.",
+        message: "Unable to continue with password.",
       })
       return
     }
@@ -143,7 +156,7 @@ export function PasswordSignInForm() {
           className="h-13 rounded-full text-base w-full"
           disabled={isSubmitting}
         >
-          {isSubmitting ? <Spinner /> : "Sign in"}
+          {isSubmitting ? <Spinner /> : "Continue with password"}
         </Button>
       </FieldGroup>
     </form>
