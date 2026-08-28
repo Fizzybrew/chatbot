@@ -14,8 +14,30 @@ export const auth = betterAuth({
     connectionString: process.env.DATABASE_URL,
   }),
 
+  rateLimit: {
+    enabled: process.env.NODE_ENV === "production",
+    window: 60,
+    max: 100,
+  },
+
+  account: {
+    accountLinking: {
+      enabled: true,
+      disableImplicitLinking: false,
+    },
+  },
+
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      void resend.emails.send({
+        from: resendFrom,
+        to: user.email,
+        subject: "Reset your password",
+        text: `Reset your password by opening this link: ${url}`,
+      })
+    },
   },
 
   socialProviders: {
