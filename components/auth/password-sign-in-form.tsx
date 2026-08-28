@@ -119,6 +119,16 @@ export function PasswordSignInForm() {
           }}
         />
 
+        <Button
+          type="button"
+          variant="link"
+          className="w-fit self-end px-0"
+          onClick={() => router.push("/auth/forgot-password")}
+          disabled={isSubmitting}
+        >
+          Forgot password?
+        </Button>
+
         {isSubmitted && errors.root && (
           <FieldError>{errors.root.message}</FieldError>
         )}
