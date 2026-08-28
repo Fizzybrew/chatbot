@@ -104,7 +104,11 @@ export function OtpForm({ email }: OtpFormProps) {
   const isLoading = isSubmitting || isResending
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-[340px]">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="w-full max-w-[340px]"
+    >
       <FieldGroup>
         <Controller
           name="otp"
@@ -128,15 +132,33 @@ export function OtpForm({ email }: OtpFormProps) {
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
-                  className="h-13 w-full rounded-full text-base"
+                  className="h-13 rounded-full text-base w-full"
                 >
                   <InputOTPGroup className="w-full justify-between">
-                    <InputOTPSlot index={0} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
-                    <InputOTPSlot index={1} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
-                    <InputOTPSlot index={2} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
-                    <InputOTPSlot index={3} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
-                    <InputOTPSlot index={4} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
-                    <InputOTPSlot index={5} className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base" />
+                    <InputOTPSlot
+                      index={0}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
+                    <InputOTPSlot
+                      index={1}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
+                    <InputOTPSlot
+                      index={2}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
+                    <InputOTPSlot
+                      index={3}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
+                    <InputOTPSlot
+                      index={4}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
+                    <InputOTPSlot
+                      index={5}
+                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
+                    />
                   </InputOTPGroup>
                 </InputOTP>
                 {showError && (
@@ -156,7 +178,7 @@ export function OtpForm({ email }: OtpFormProps) {
         <FieldGroup className="gap-2">
           <Button
             type="submit"
-            className="h-13 w-full rounded-full text-base"
+            className="h-13 rounded-full text-base w-full"
             disabled={isLoading}
           >
             {isSubmitting ? <Spinner /> : "Verify"}
@@ -165,21 +187,23 @@ export function OtpForm({ email }: OtpFormProps) {
           <Button
             type="button"
             variant="outline"
-            className="h-13 w-full rounded-full text-base"
+            className="h-13 rounded-full text-base w-full"
             disabled={resendCooldown > 0 || isLoading}
             onClick={onResend}
           >
-            {isResending
-              ? <Spinner />
-              : resendCooldown > 0
-                ? `Resend code in ${resendCooldown}s`
-                : "Resend code"}
+            {isResending ? (
+              <Spinner />
+            ) : resendCooldown > 0 ? (
+              `Resend code in ${resendCooldown}s`
+            ) : (
+              "Resend code"
+            )}
           </Button>
 
           <Button
             type="button"
             variant="ghost"
-            className="h-13 w-full rounded-full text-base"
+            className="h-13 rounded-full text-base w-full"
             disabled={isLoading}
             onClick={() => router.replace("/auth")}
           >
