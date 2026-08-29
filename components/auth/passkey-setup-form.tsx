@@ -18,6 +18,8 @@ export function PasskeySetupForm() {
     setIsCreating(true)
 
     const { error } = await authClient.passkey.addPasskey({
+      name: "This device",
+      authenticatorAttachment: "platform",
       createSession: false,
     })
 
