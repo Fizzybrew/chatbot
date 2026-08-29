@@ -73,7 +73,7 @@ export function EmailAuthForm() {
 
     const { error } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: "/auth/setup-passkey",
     })
 
     if (error) {
@@ -91,7 +91,7 @@ export function EmailAuthForm() {
 
     const { error } = await authClient.signIn.social({
       provider: "yandex",
-      callbackURL: "/",
+      callbackURL: "/auth/setup-passkey",
     })
 
     if (error) {
