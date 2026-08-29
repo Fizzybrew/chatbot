@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth"
+import { passkey } from "@better-auth/passkey"
 import { emailOTP, genericOAuth, yandex } from "better-auth/plugins"
 import { Pool } from "pg"
 import { Resend } from "resend"
@@ -7,8 +8,12 @@ const resend = new Resend(process.env.RESEND_API_KEY!)
 const resendFrom =
   process.env.RESEND_FROM_EMAIL ?? "Chatbot <onboarding@resend.dev>"
 
+const authBaseURL =
+  process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
+const authOrigin = new URL(authBaseURL)
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: authBaseURL,
 
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -27,19 +32,6 @@ export const auth = betterAuth({
     },
   },
 
-  emailAndPassword: {
-    enabled: true,
-    revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => {
-      void resend.emails.send({
-        from: resendFrom,
-        to: user.email,
-        subject: "Reset your password",
-        text: `Reset your password by opening this link: ${url}`,
-      })
-    },
-  },
-
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -48,6 +40,11 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    passkey({
+      rpID: authOrigin.hostname,
+      rpName: "Chatbot",
+      origin: authOrigin.origin,
+    }),
     emailOTP({
       otpLength: 6,
       expiresIn: 300,
