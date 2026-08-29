@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { passkey } from "@better-auth/passkey"
-import { emailOTP, genericOAuth, yandex } from "better-auth/plugins"
+import { emailOTP } from "better-auth/plugins"
 import { Pool } from "pg"
 import { Resend } from "resend"
 
@@ -37,6 +37,10 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
   },
 
   plugins: [
@@ -58,15 +62,6 @@ export const auth = betterAuth({
           text: `Your verification code is ${otp}.`,
         })
       },
-    }),
-    genericOAuth({
-      config: [
-        yandex({
-          clientId: process.env.YANDEX_CLIENT_ID!,
-          clientSecret: process.env.YANDEX_CLIENT_SECRET!,
-          scopes: ["login:info", "login:email"],
-        }),
-      ],
     }),
   ],
 })
