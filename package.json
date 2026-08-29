@@ -13,8 +13,9 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@better-auth/passkey": "^1.7.2",
     "@hookform/resolvers": "^5.9.1",
-    "better-auth": "^1.7.1",
+    "better-auth": "^1.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "input-otp": "^1.5.0",
