@@ -16,7 +16,7 @@ import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 export function EmailAuthForm() {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [isYandexLoading, setIsYandexLoading] = useState(false)
+  const [isGithubLoading, setIsGithubLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
 
   const form = useForm<EmailInput>({
@@ -85,20 +85,20 @@ export function EmailAuthForm() {
     }
   }
 
-  const handleYandexSignIn = async () => {
+  const handleGithubSignIn = async () => {
     form.clearErrors("root")
-    setIsYandexLoading(true)
+    setIsGithubLoading(true)
 
     const { error } = await authClient.signIn.social({
-      provider: "yandex",
+      provider: "github",
       callbackURL: "/auth/setup-passkey",
     })
 
     if (error) {
-      setIsYandexLoading(false)
+      setIsGithubLoading(false)
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to continue with Yandex.",
+        message: error.message || "Unable to continue with GitHub.",
       })
     }
   }
@@ -133,7 +133,7 @@ export function EmailAuthForm() {
   } = form
 
   const isLoading =
-    isSubmitting || isGoogleLoading || isYandexLoading || isPasskeyLoading
+    isSubmitting || isGoogleLoading || isGithubLoading || isPasskeyLoading
 
   return (
     <div className="w-full max-w-85 space-y-4">
@@ -151,10 +151,10 @@ export function EmailAuthForm() {
         type="button"
         variant="outline"
         className="h-13 w-full rounded-full text-base"
-        onClick={handleYandexSignIn}
+        onClick={handleGithubSignIn}
         disabled={isLoading}
       >
-        {isYandexLoading ? <Spinner /> : "Continue with Yandex"}
+        {isGithubLoading ? <Spinner /> : "Continue with GitHub"}
       </Button>
 
       <Button
