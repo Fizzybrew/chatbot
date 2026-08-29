@@ -6,10 +6,10 @@ export default function AuthPage() {
       <section className="flex w-full max-w-sm flex-col items-center gap-8">
         <header className="w-full space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Sign in or sing up
+            Sign in or sign up
           </h1>
           <p className="text-sm text-muted-foreground">
-            Continue with Google or use your email.
+            Continue with Google, Yandex, passkey, or email.
           </p>
         </header>
 
