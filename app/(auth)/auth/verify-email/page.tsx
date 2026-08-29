@@ -1,34 +1,30 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 import { OtpForm } from "@/components/auth/otp-form"
 
-const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
-const AUTH_EMAIL_LABEL_KEY = "auth:verification-email-label"
+const AUTH_VERIFICATION_EMAIL_COOKIE = "auth_verification_email"
 
-export default function VerifyEmailPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState<string | null>(null)
-  const [emailLabel, setEmailLabel] = useState<string | null>(null)
+function maskEmail(email: string) {
+  const [localPart, domain] = email.split("@")
+  if (!localPart || !domain) return email
+  if (localPart.length <= 2) return `${localPart[0] ?? ""}•••@${domain}`
 
-  useEffect(() => {
-    const storedEmail = sessionStorage.getItem(AUTH_EMAIL_STORAGE_KEY)
-    const storedLabel = sessionStorage.getItem(AUTH_EMAIL_LABEL_KEY)
+  return `${localPart[0]}${"•".repeat(
+    Math.min(6, Math.max(2, localPart.length - 2)),
+  )}${localPart.at(-1)}@${domain}`
+}
 
-    if (!storedEmail) {
-      router.replace("/auth")
-      return
-    }
+export default async function VerifyEmailPage() {
+  const cookieStore = await cookies()
+  const encodedEmail = cookieStore.get(AUTH_VERIFICATION_EMAIL_COOKIE)?.value
 
-    setEmail(storedEmail)
-    setEmailLabel(storedLabel ?? storedEmail)
-  }, [router])
-
-  if (!email) {
-    return null
+  if (!encodedEmail) {
+    redirect("/auth")
   }
+
+  const email = decodeURIComponent(encodedEmail)
+  const emailLabel = maskEmail(email)
 
   return (
     <main className="flex min-h-svh items-center justify-center px-4 py-12">
