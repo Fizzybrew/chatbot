@@ -1,4 +1,5 @@
 import { EmailAuthForm } from "@/components/auth/email-auth-form"
+import { LogoutButton } from "@/components/auth/logout-button"
 
 export default function AuthPage() {
   return (
@@ -9,11 +10,12 @@ export default function AuthPage() {
             Sign in or sign up
           </h1>
           <p className="text-sm text-muted-foreground">
-            Continue with Google, Yandex, passkey, or email.
+            Continue with Google, GitHub, passkey, or email.
           </p>
         </header>
 
         <EmailAuthForm />
+        <LogoutButton />
       </section>
     </main>
   )
