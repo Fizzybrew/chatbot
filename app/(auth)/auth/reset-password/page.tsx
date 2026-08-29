@@ -1,17 +1,14 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
-
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
 
-export default function ResetPasswordPage() {
-  const searchParams = useSearchParams()
-  const [token, setToken] = useState<string | null>(null)
+interface ResetPasswordPageProps {
+  searchParams: Promise<{ token?: string | string[] | undefined }>
+}
 
-  useEffect(() => {
-    setToken(searchParams.get("token"))
-  }, [searchParams])
+export default async function ResetPasswordPage({
+  searchParams,
+}: ResetPasswordPageProps) {
+  const params = await searchParams
+  const token = typeof params.token === "string" ? params.token : null
 
   return (
     <main className="flex min-h-svh items-center justify-center px-4 py-12">
