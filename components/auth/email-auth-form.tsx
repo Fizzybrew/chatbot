@@ -10,16 +10,8 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
+import { sendEmailVerificationOtp } from "@/lib/auth-verification-actions"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
-
-const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
-
-function maskEmail(email: string) {
-  const [localPart, domain] = email.split("@")
-  if (!localPart || !domain) return email
-  if (localPart.length <= 2) return `${localPart[0] ?? ""}•••@${domain}`
-  return `${localPart[0]}${"•".repeat(Math.min(6, Math.max(2, localPart.length - 2)))}${localPart.at(-1)}@${domain}`
-}
 
 export function EmailAuthForm() {
   const router = useRouter()
@@ -36,21 +28,16 @@ export function EmailAuthForm() {
   const onSubmit = async ({ email }: EmailInput) => {
     form.clearErrors("root")
 
-    const { error } = await authClient.emailOtp.sendVerificationOtp({
-      email,
-      type: "sign-in",
-    })
+    const result = await sendEmailVerificationOtp(email)
 
-    if (error) {
+    if (!result.success) {
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to send verification code.",
+        message: result.message,
       })
       return
     }
 
-    sessionStorage.setItem(AUTH_EMAIL_STORAGE_KEY, email)
-    sessionStorage.setItem("auth:verification-email-label", maskEmail(email))
     router.push("/auth/verify-email")
   }
 
