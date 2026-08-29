@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,6 +17,7 @@ export function EmailAuthForm() {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isYandexLoading, setIsYandexLoading] = useState(false)
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
 
   const form = useForm<EmailInput>({
     resolver: zodResolver(emailSchema),
@@ -24,6 +25,31 @@ export function EmailAuthForm() {
     reValidateMode: "onChange",
     defaultValues: { email: "" },
   })
+
+  useEffect(() => {
+    if (
+      typeof PublicKeyCredential === "undefined" ||
+      !PublicKeyCredential.isConditionalMediationAvailable
+    ) {
+      return
+    }
+
+    void (async () => {
+      if (!(await PublicKeyCredential.isConditionalMediationAvailable())) {
+        return
+      }
+
+      await authClient.signIn.passkey({
+        autoFill: true,
+        fetchOptions: {
+          onSuccess() {
+            router.replace("/")
+            router.refresh()
+          },
+        },
+      })
+    })()
+  }, [router])
 
   const onSubmit = async ({ email }: EmailInput) => {
     form.clearErrors("root")
@@ -77,20 +103,44 @@ export function EmailAuthForm() {
     }
   }
 
+  const handlePasskeySignIn = async () => {
+    form.clearErrors("root")
+    setIsPasskeyLoading(true)
+
+    const { error } = await authClient.signIn.passkey({
+      autoFill: false,
+      fetchOptions: {
+        onSuccess() {
+          router.replace("/")
+          router.refresh()
+        },
+      },
+    })
+
+    if (error) {
+      setIsPasskeyLoading(false)
+      form.setError("root", {
+        type: "server",
+        message: error.message || "Unable to continue with passkey.",
+      })
+    }
+  }
+
   const {
     handleSubmit,
     control,
     formState: { errors, isSubmitting, isSubmitted },
   } = form
 
-  const isLoading = isSubmitting || isGoogleLoading || isYandexLoading
+  const isLoading =
+    isSubmitting || isGoogleLoading || isYandexLoading || isPasskeyLoading
 
   return (
     <div className="w-full max-w-85 space-y-4">
       <Button
         type="button"
         variant="outline"
-        className="h-13 rounded-full text-base w-full"
+        className="h-13 w-full rounded-full text-base"
         onClick={handleGoogleSignIn}
         disabled={isLoading}
       >
@@ -100,7 +150,7 @@ export function EmailAuthForm() {
       <Button
         type="button"
         variant="outline"
-        className="h-13 rounded-full text-base w-full"
+        className="h-13 w-full rounded-full text-base"
         onClick={handleYandexSignIn}
         disabled={isLoading}
       >
@@ -110,11 +160,11 @@ export function EmailAuthForm() {
       <Button
         type="button"
         variant="outline"
-        className="h-13 rounded-full text-base w-full"
-        onClick={() => router.push("/auth/password")}
+        className="h-13 w-full rounded-full text-base"
+        onClick={handlePasskeySignIn}
         disabled={isLoading}
       >
-        Continue with password
+        {isPasskeyLoading ? <Spinner /> : "Continue with passkey"}
       </Button>
 
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -141,8 +191,8 @@ export function EmailAuthForm() {
                     id="auth-email"
                     type="email"
                     placeholder="Email"
-                    className="h-13 rounded-full text-base w-full"
-                    autoComplete="email"
+                    className="h-13 w-full rounded-full text-base"
+                    autoComplete="username webauthn"
                     autoFocus
                     aria-invalid={!!showError}
                     aria-describedby={showError ? "auth-email-error" : undefined}
@@ -164,7 +214,7 @@ export function EmailAuthForm() {
 
           <Button
             type="submit"
-            className="h-13 rounded-full text-base w-full"
+            className="h-13 w-full rounded-full text-base"
             disabled={isLoading}
           >
             {isSubmitting ? <Spinner /> : "Continue with email"}
