@@ -67,6 +67,7 @@ export const auth = betterAuth({
         yandex({
           clientId: process.env.YANDEX_CLIENT_ID!,
           clientSecret: process.env.YANDEX_CLIENT_SECRET!,
+          scopes: ["login:info", "login:email"],
         }),
       ],
     }),
