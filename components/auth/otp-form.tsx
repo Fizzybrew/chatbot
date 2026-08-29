@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/input-otp"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
+import {
+  clearEmailVerificationCookie,
+  sendEmailVerificationOtp,
+} from "@/lib/auth-verification-actions"
 import { otpSchema, type OtpInput } from "@/lib/auth-schemas"
 
 interface OtpFormProps {
@@ -22,7 +26,6 @@ interface OtpFormProps {
 }
 
 const RESEND_COOLDOWN_SECONDS = 30
-const AUTH_EMAIL_STORAGE_KEY = "auth:verification-email"
 
 export function OtpForm({ email }: OtpFormProps) {
   const router = useRouter()
@@ -49,11 +52,6 @@ export function OtpForm({ email }: OtpFormProps) {
   const onSubmit = async ({ otp }: OtpInput) => {
     form.clearErrors("root")
 
-    if (!email) {
-      router.replace("/auth")
-      return
-    }
-
     const { error } = await authClient.signIn.emailOtp({ email, otp })
 
     if (error) {
@@ -64,29 +62,25 @@ export function OtpForm({ email }: OtpFormProps) {
       return
     }
 
-    sessionStorage.removeItem(AUTH_EMAIL_STORAGE_KEY)
-    sessionStorage.removeItem("auth:verification-email-label")
+    await clearEmailVerificationCookie()
     router.replace("/")
     router.refresh()
   }
 
   const onResend = async () => {
-    if (!email || resendCooldown > 0 || isResending) return
+    if (resendCooldown > 0 || isResending) return
 
     form.clearErrors("root")
     setIsResending(true)
 
-    const { error } = await authClient.emailOtp.sendVerificationOtp({
-      email,
-      type: "sign-in",
-    })
+    const result = await sendEmailVerificationOtp(email)
 
     setIsResending(false)
 
-    if (error) {
+    if (!result.success) {
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to resend verification code.",
+        message: result.message,
       })
       return
     }
@@ -132,33 +126,15 @@ export function OtpForm({ email }: OtpFormProps) {
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
-                  className="h-13 rounded-full text-base w-full"
+                  className="h-13 w-full rounded-full text-base"
                 >
                   <InputOTPGroup className="w-full justify-between">
-                    <InputOTPSlot
-                      index={0}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
-                    <InputOTPSlot
-                      index={1}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
-                    <InputOTPSlot
-                      index={2}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
-                    <InputOTPSlot
-                      index={3}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
-                    <InputOTPSlot
-                      index={4}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
-                    <InputOTPSlot
-                      index={5}
-                      className="h-13 w-[calc((100%-2.5rem)/6)] rounded-full text-base"
-                    />
+                    <InputOTPSlot index={0} className="h-13 flex-1 rounded-full text-base" />
+                    <InputOTPSlot index={1} className="h-13 flex-1 rounded-full text-base" />
+                    <InputOTPSlot index={2} className="h-13 flex-1 rounded-full text-base" />
+                    <InputOTPSlot index={3} className="h-13 flex-1 rounded-full text-base" />
+                    <InputOTPSlot index={4} className="h-13 flex-1 rounded-full text-base" />
+                    <InputOTPSlot index={5} className="h-13 flex-1 rounded-full text-base" />
                   </InputOTPGroup>
                 </InputOTP>
                 {showError && (
@@ -178,7 +154,7 @@ export function OtpForm({ email }: OtpFormProps) {
         <FieldGroup className="gap-2">
           <Button
             type="submit"
-            className="h-13 rounded-full text-base w-full"
+            className="h-13 w-full rounded-full text-base"
             disabled={isLoading}
           >
             {isSubmitting ? <Spinner /> : "Verify"}
@@ -187,7 +163,7 @@ export function OtpForm({ email }: OtpFormProps) {
           <Button
             type="button"
             variant="outline"
-            className="h-13 rounded-full text-base w-full"
+            className="h-13 w-full rounded-full text-base"
             disabled={resendCooldown > 0 || isLoading}
             onClick={onResend}
           >
@@ -198,16 +174,6 @@ export function OtpForm({ email }: OtpFormProps) {
             ) : (
               "Resend code"
             )}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-13 rounded-full text-base w-full"
-            disabled={isLoading}
-            onClick={() => router.replace("/auth")}
-          >
-            Change email
           </Button>
         </FieldGroup>
       </FieldGroup>
