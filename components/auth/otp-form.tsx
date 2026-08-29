@@ -63,7 +63,7 @@ export function OtpForm({ email }: OtpFormProps) {
     }
 
     await clearEmailVerificationCookie()
-    router.replace("/")
+    router.replace("/auth/setup-passkey")
     router.refresh()
   }
 
