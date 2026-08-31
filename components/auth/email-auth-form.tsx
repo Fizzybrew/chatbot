@@ -144,7 +144,14 @@ export function EmailAuthForm() {
         onClick={handleGoogleSignIn}
         disabled={isLoading}
       >
-        {isGoogleLoading ? <Spinner /> : "Continue with Google"}
+        {isGoogleLoading ? (
+          <>
+            <Spinner />
+            Continue with Google
+          </>
+        ) : (
+          "Continue with Google"
+        )}
       </Button>
 
       <Button
@@ -154,7 +161,14 @@ export function EmailAuthForm() {
         onClick={handleGithubSignIn}
         disabled={isLoading}
       >
-        {isGithubLoading ? <Spinner /> : "Continue with GitHub"}
+        {isGithubLoading ? (
+          <>
+            <Spinner />
+            Continue with GitHub
+          </>
+        ) : (
+          "Continue with GitHub"
+        )}
       </Button>
 
       <Button
@@ -164,7 +178,14 @@ export function EmailAuthForm() {
         onClick={handlePasskeySignIn}
         disabled={isLoading}
       >
-        {isPasskeyLoading ? <Spinner /> : "Continue with passkey"}
+        {isPasskeyLoading ? (
+          <>
+            <Spinner />
+            Continue with passkey
+          </>
+        ) : (
+          "Continue with passkey"
+        )}
       </Button>
 
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
