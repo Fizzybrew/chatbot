@@ -10,7 +10,6 @@ const resendFrom =
 
 const authBaseURL =
   process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
-const authOrigin = new URL(authBaseURL)
 
 export const auth = betterAuth({
   baseURL: authBaseURL,
@@ -44,11 +43,7 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    passkey({
-      rpID: authOrigin.hostname,
-      rpName: "Chatbot",
-      origin: authOrigin.origin,
-    }),
+    passkey(),
     emailOTP({
       otpLength: 6,
       expiresIn: 300,
