@@ -187,7 +187,7 @@ export function EmailAuthForm() {
         )}
       </Button>
 
-      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="flex items-center gap-4 text-muted-foreground">
         <Separator className="flex-1" />
         <span>OR</span>
         <Separator className="flex-1" />
