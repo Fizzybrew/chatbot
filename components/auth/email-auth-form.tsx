@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { sendEmailVerificationOtp } from "@/lib/auth-verification-actions"
@@ -73,7 +74,6 @@ export function EmailAuthForm() {
 
     const { error } = await authClient.signIn.social({
       provider: "google",
-      errorCallbackURL: "/auth",
     })
 
     if (error) {
@@ -91,7 +91,6 @@ export function EmailAuthForm() {
 
     const { error } = await authClient.signIn.social({
       provider: "github",
-      errorCallbackURL: "/auth",
     })
 
     if (error) {
@@ -189,9 +188,9 @@ export function EmailAuthForm() {
       </Button>
 
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
+        <Separator className="flex-1" />
         <span>OR</span>
-        <div className="h-px flex-1 bg-border" />
+        <Separator className="flex-1" />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -238,7 +237,14 @@ export function EmailAuthForm() {
             className="h-13 w-full rounded-full text-base"
             disabled={isLoading}
           >
-            {isSubmitting ? <Spinner /> : "Continue with email"}
+            {isSubmitting ? (
+              <>
+                <Spinner />
+                Continue with email
+              </>
+            ) : (
+              "Continue with email"
+            )}
           </Button>
         </FieldGroup>
       </form>
