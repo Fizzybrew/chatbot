@@ -4,15 +4,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { REGEXP_ONLY_DIGITS } from "input-otp"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp"
+import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import {
@@ -115,28 +110,24 @@ export function OtpForm({ email }: OtpFormProps) {
                 <FieldLabel htmlFor="auth-otp" className="sr-only">
                   Verification code
                 </FieldLabel>
-                <InputOTP
+                <Input
                   id="auth-otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={6}
-                  pattern={REGEXP_ONLY_DIGITS}
+                  pattern="[0-9]*"
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(event) => {
+                    field.onChange(event.target.value.replace(/\D/g, ""))
+                  }}
                   onBlur={field.onBlur}
                   disabled={isLoading}
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
                   className="h-13 w-full rounded-full text-base"
-                >
-                  <InputOTPGroup className="w-full justify-between">
-                    <InputOTPSlot index={0} className="h-13 flex-1 rounded-full text-base" />
-                    <InputOTPSlot index={1} className="h-13 flex-1 rounded-full text-base" />
-                    <InputOTPSlot index={2} className="h-13 flex-1 rounded-full text-base" />
-                    <InputOTPSlot index={3} className="h-13 flex-1 rounded-full text-base" />
-                    <InputOTPSlot index={4} className="h-13 flex-1 rounded-full text-base" />
-                    <InputOTPSlot index={5} className="h-13 flex-1 rounded-full text-base" />
-                  </InputOTPGroup>
-                </InputOTP>
+                />
                 {showError && (
                   <FieldError id="auth-otp-error">
                     {fieldState.error?.message}
