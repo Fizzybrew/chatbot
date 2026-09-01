@@ -1,5 +1,4 @@
 import { EmailAuthForm } from "@/components/auth/email-auth-form"
-import { LogoutButton } from "@/components/auth/logout-button"
 
 export default function AuthPage() {
   return (
@@ -15,7 +14,6 @@ export default function AuthPage() {
         </header>
 
         <EmailAuthForm />
-        <LogoutButton />
       </section>
     </main>
   )
