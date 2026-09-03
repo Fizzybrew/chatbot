@@ -5,21 +5,34 @@ import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 
 import { cn } from "@/lib/utils"
 
+type DrawerContextValue = {
+  showSwipeHandle: boolean
+}
+
+const DrawerContext = React.createContext<DrawerContextValue>({
+  showSwipeHandle: true,
+})
+
 function Drawer({
-  modal = true,
   showSwipeHandle = true,
   swipeDirection = "down",
+  modal = true,
+  children,
   ...props
-}: DrawerPrimitive.Root.Props & { showSwipeHandle?: boolean }) {
+}: DrawerPrimitive.Root.Props & {
+  showSwipeHandle?: boolean
+}) {
   return (
-    <DrawerPrimitive.Root
-      data-slot="drawer"
-      modal={modal}
-      swipeDirection={swipeDirection}
-      {...props}
-    >
-      {showSwipeHandle ? <div className="sr-only">Drawer</div> : null}
-    </DrawerPrimitive.Root>
+    <DrawerContext.Provider value={{ showSwipeHandle }}>
+      <DrawerPrimitive.Root
+        data-slot="drawer"
+        modal={modal}
+        swipeDirection={swipeDirection}
+        {...props}
+      >
+        {children}
+      </DrawerPrimitive.Root>
+    </DrawerContext.Provider>
   )
 }
 
@@ -56,6 +69,8 @@ function DrawerContent({
   children,
   ...props
 }: DrawerPrimitive.Popup.Props) {
+  const { showSwipeHandle } = React.useContext(DrawerContext)
+
   return (
     <DrawerPortal>
       <DrawerOverlay />
@@ -66,12 +81,17 @@ function DrawerContent({
         <DrawerPrimitive.Popup
           data-slot="drawer-content"
           className={cn(
-            "fixed inset-x-0 bottom-0 max-h-[90dvh] w-full rounded-t-2xl border bg-background shadow-2xl outline-none transition-transform duration-300 data-ending-style:translate-y-full data-starting-style:translate-y-full",
+            "pointer-events-auto fixed inset-x-0 bottom-0 max-h-[92dvh] w-full rounded-t-2xl border bg-background p-6 shadow-2xl outline-none transition-transform duration-300 data-ending-style:translate-y-full data-starting-style:translate-y-full",
             className,
           )}
           {...props}
         >
-          <div className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
+          {showSwipeHandle && (
+            <div
+              aria-hidden="true"
+              className="mx-auto mb-5 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30"
+            />
+          )}
           {children}
         </DrawerPrimitive.Popup>
       </DrawerPrimitive.Viewport>
@@ -83,7 +103,7 @@ function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="drawer-header"
-      className={cn("flex flex-col gap-2 px-6", className)}
+      className={cn("flex flex-col gap-2", className)}
       {...props}
     />
   )
@@ -93,7 +113,7 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="drawer-footer"
-      className={cn("mt-auto flex flex-col gap-2 px-6 pb-6", className)}
+      className={cn("mt-auto flex flex-col gap-2", className)}
       {...props}
     />
   )
