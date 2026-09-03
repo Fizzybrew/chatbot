@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -14,20 +14,21 @@ import {
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
-import {
-  clearEmailVerificationCookie,
-  sendEmailVerificationOtp,
-} from "@/lib/auth-verification-actions"
 import { otpSchema, type OtpInput } from "@/lib/auth-schemas"
 
 interface OtpFormProps {
   email: string
+  onAuthenticated?: () => void
+  onChangeEmail: () => void
 }
 
 const RESEND_COOLDOWN_SECONDS = 30
 
-export function OtpForm({ email }: OtpFormProps) {
-  const router = useRouter()
+export function OtpForm({
+  email,
+  onAuthenticated,
+  onChangeEmail,
+}: OtpFormProps) {
   const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS)
   const [isResending, setIsResending] = useState(false)
 
@@ -61,9 +62,7 @@ export function OtpForm({ email }: OtpFormProps) {
       return
     }
 
-    await clearEmailVerificationCookie()
-    router.replace("/auth/setup-passkey")
-    router.refresh()
+    onAuthenticated?.()
   }
 
   const onResend = async () => {
@@ -72,14 +71,19 @@ export function OtpForm({ email }: OtpFormProps) {
     form.clearErrors("root")
     setIsResending(true)
 
-    const result = await sendEmailVerificationOtp(email)
+    const { error } = await authClient.emailOtp.sendVerificationOtp({
+      email,
+      type: "sign-in",
+    })
 
     setIsResending(false)
 
-    if (!result.success) {
+    if (error) {
       form.setError("root", {
         type: "server",
-        message: result.message,
+        message:
+          error.message ||
+          "Unable to resend the verification code. Please try again.",
       })
       return
     }
@@ -90,63 +94,55 @@ export function OtpForm({ email }: OtpFormProps) {
 
   const {
     handleSubmit,
-    control,
+    register,
     formState: { errors, isSubmitting, isSubmitted },
   } = form
 
   const isLoading = isSubmitting || isResending
+  const showRootError = isSubmitted && errors.root
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="max-w-85">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       <FieldGroup>
-        <Controller
-          name="otp"
-          control={control}
-          render={({ field, fieldState }) => {
-            const showError = isSubmitted && fieldState.error
+        <Field data-invalid={!!(isSubmitted && errors.otp)}>
+          <FieldLabel htmlFor="auth-otp" className="sr-only">
+            Verification code
+          </FieldLabel>
+          <Input
+            {...register("otp")}
+            id="auth-otp"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            pattern="[0-9]*"
+            placeholder="6-digit code"
+            autoFocus
+            aria-invalid={!!(isSubmitted && errors.otp)}
+            aria-describedby={
+              isSubmitted && errors.otp ? "auth-otp-error" : undefined
+            }
+            onInput={(event) => {
+              event.currentTarget.value = event.currentTarget.value
+                .replace(/\D/g, "")
+                .slice(0, 6)
+            }}
+            disabled={isLoading}
+            className="h-13 w-full rounded-full px-5 py-3 text-center text-base tracking-[0.35em]"
+          />
+          {isSubmitted && errors.otp && (
+            <FieldError id="auth-otp-error">
+              {errors.otp.message}
+            </FieldError>
+          )}
+        </Field>
 
-            return (
-              <Field data-invalid={!!showError}>
-                <FieldLabel htmlFor="auth-otp" className="sr-only">
-                  Code
-                </FieldLabel>
-                <Input
-                  id="auth-otp"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  pattern="[0-9]*"
-                  placeholder="Code"
-                  value={field.value}
-                  onChange={(event) => {
-                    field.onChange(event.target.value.replace(/\D/g, ""))
-                  }}
-                  onBlur={field.onBlur}
-                  disabled={isLoading}
-                  autoFocus
-                  aria-invalid={!!showError}
-                  aria-describedby={showError ? "auth-otp-error" : undefined}
-                  className="h-13 w-full rounded-full px-5 py-3 text-base"
-                />
-                {showError && (
-                  <FieldError id="auth-otp-error">
-                    {fieldState.error?.message}
-                  </FieldError>
-                )}
-              </Field>
-            )
-          }}
-        />
-
-        {isSubmitted && errors.root && (
-          <FieldError>{errors.root.message}</FieldError>
-        )}
+        {showRootError && <FieldError>{errors.root?.message}</FieldError>}
 
         <FieldGroup className="gap-2">
           <Button
             type="submit"
-            className="h-13 w-full rounded-full text-base"
+            className="h-13 w-full rounded-full text-base font-normal"
             disabled={isLoading}
           >
             {isSubmitting && <Spinner />}
@@ -156,14 +152,24 @@ export function OtpForm({ email }: OtpFormProps) {
           <Button
             type="button"
             variant="ghost"
-            className="h-13 w-full rounded-full text-base"
+            className="h-12 w-full rounded-full text-base font-normal"
             disabled={resendCooldown > 0 || isLoading}
             onClick={onResend}
           >
             {isResending && <Spinner />}
             {resendCooldown > 0
-              ? `Resend email in ${resendCooldown}s`
-              : "Resend email"}
+              ? `Resend code in ${resendCooldown}s`
+              : "Resend code"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-12 w-full rounded-full text-base font-normal text-muted-foreground"
+            disabled={isLoading}
+            onClick={onChangeEmail}
+          >
+            Use a different email
           </Button>
         </FieldGroup>
       </FieldGroup>

@@ -1,15 +1,15 @@
-import { EmailAuthForm } from "@/components/auth/email-auth-form"
+import type { Metadata } from "next"
 
-export default function AuthPage() {
-  return (
-    <>
-      <header className="space-y-5 text-center">
-        <h1 className="text-3xl">
-          Log in or sign up
-        </h1>
-      </header>
+import { AuthPage } from "@/components/auth/auth-page"
 
-      <EmailAuthForm />
-    </>
-  )
+export const metadata: Metadata = {
+  title: "Log in or sign up",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
+export default function Page() {
+  return <AuthPage />
 }

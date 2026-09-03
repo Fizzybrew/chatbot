@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -15,11 +15,17 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
-import { sendEmailVerificationOtp } from "@/lib/auth-verification-actions"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
-export function EmailAuthForm() {
-  const router = useRouter()
+interface EmailAuthFormProps {
+  onOtpSent: (email: string) => void
+  onAuthenticated?: () => void
+}
+
+export function EmailAuthForm({
+  onOtpSent,
+  onAuthenticated,
+}: EmailAuthFormProps) {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isGithubLoading, setIsGithubLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
@@ -44,31 +50,35 @@ export function EmailAuthForm() {
         return
       }
 
-      await authClient.signIn.passkey({
+      const { error } = await authClient.signIn.passkey({
         autoFill: true,
-        fetchOptions: {
-          onSuccess() {
-            router.replace("/")
-            router.refresh()
-          },
-        },
       })
+
+      if (!error) {
+        onAuthenticated?.()
+      }
     })()
-  }, [router])
+  }, [onAuthenticated])
 
   const onSubmit = async ({ email }: EmailInput) => {
     form.clearErrors("root")
-    const result = await sendEmailVerificationOtp(email)
 
-    if (!result.success) {
+    const { error } = await authClient.emailOtp.sendVerificationOtp({
+      email,
+      type: "sign-in",
+    })
+
+    if (error) {
       form.setError("root", {
         type: "server",
-        message: result.message,
+        message:
+          error.message ||
+          "Unable to send the verification code. Please try again.",
       })
       return
     }
 
-    router.push("/email-verification")
+    onOtpSent(email)
   }
 
   const handleGoogleSignIn = async () => {
@@ -113,22 +123,19 @@ export function EmailAuthForm() {
 
     const { error } = await authClient.signIn.passkey({
       autoFill: false,
-      fetchOptions: {
-        onSuccess() {
-          router.replace("/")
-          router.refresh()
-        },
-      },
     })
 
-    if (error) {
-      setIsPasskeyLoading(false)
-      form.setError("root", {
-        type: "server",
-        message:
-          error.message || "Unable to continue with passkey. Please try again.",
-      })
+    if (!error) {
+      onAuthenticated?.()
+      return
     }
+
+    setIsPasskeyLoading(false)
+    form.setError("root", {
+      type: "server",
+      message:
+        error.message || "Unable to continue with passkey. Please try again.",
+    })
   }
 
   const {
@@ -202,7 +209,7 @@ export function EmailAuthForm() {
                     type="email"
                     placeholder="Email address"
                     className="h-13 w-full rounded-full px-5 py-3 text-base"
-                    autoComplete="username webauthn"
+                    autoComplete="email"
                     autoFocus
                     aria-invalid={!!showError}
                     aria-describedby={
