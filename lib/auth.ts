@@ -5,11 +5,9 @@ import { Pool } from "pg"
 import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
-const resendFrom =
-  process.env.RESEND_FROM_EMAIL ?? "Chatbot <onboarding@resend.dev>"
+const resendFrom = process.env.RESEND_FROM_EMAIL!
 
-const authBaseURL =
-  process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
+const authBaseURL = process.env.BETTER_AUTH_URL!
 
 export const auth = betterAuth({
   baseURL: authBaseURL,
@@ -53,7 +51,9 @@ export const auth = betterAuth({
           from: resendFrom,
           to: email,
           subject:
-            type === "sign-in" ? "Your sign-in code" : "Your verification code",
+            type === "sign-in"
+              ? "Your sign-in code"
+              : "Your verification code",
           text: `Your verification code is ${otp}.`,
         })
       },

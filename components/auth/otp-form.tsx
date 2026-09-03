@@ -4,9 +4,13 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
@@ -93,11 +97,7 @@ export function OtpForm({ email }: OtpFormProps) {
   const isLoading = isSubmitting || isResending
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      className="w-full max-w-85"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="max-w-85">
       <FieldGroup>
         <Controller
           name="otp"
@@ -108,7 +108,7 @@ export function OtpForm({ email }: OtpFormProps) {
             return (
               <Field data-invalid={!!showError}>
                 <FieldLabel htmlFor="auth-otp" className="sr-only">
-                  Verification code
+                  Code
                 </FieldLabel>
                 <Input
                   id="auth-otp"
@@ -117,6 +117,7 @@ export function OtpForm({ email }: OtpFormProps) {
                   autoComplete="one-time-code"
                   maxLength={6}
                   pattern="[0-9]*"
+                  placeholder="Code"
                   value={field.value}
                   onChange={(event) => {
                     field.onChange(event.target.value.replace(/\D/g, ""))
@@ -126,7 +127,7 @@ export function OtpForm({ email }: OtpFormProps) {
                   autoFocus
                   aria-invalid={!!showError}
                   aria-describedby={showError ? "auth-otp-error" : undefined}
-                  className="h-13 w-full rounded-full text-base"
+                  className="h-13 w-full rounded-full px-5 py-3 text-base"
                 />
                 {showError && (
                   <FieldError id="auth-otp-error">
@@ -148,23 +149,21 @@ export function OtpForm({ email }: OtpFormProps) {
             className="h-13 w-full rounded-full text-base"
             disabled={isLoading}
           >
-            {isSubmitting ? <Spinner /> : "Verify"}
+            {isSubmitting && <Spinner />}
+            Continue
           </Button>
 
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             className="h-13 w-full rounded-full text-base"
             disabled={resendCooldown > 0 || isLoading}
             onClick={onResend}
           >
-            {isResending ? (
-              <Spinner />
-            ) : resendCooldown > 0 ? (
-              `Resend code in ${resendCooldown}s`
-            ) : (
-              "Resend code"
-            )}
+            {isResending && <Spinner />}
+            {resendCooldown > 0
+              ? `Resend email in ${resendCooldown}s`
+              : "Resend email"}
           </Button>
         </FieldGroup>
       </FieldGroup>

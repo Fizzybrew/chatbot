@@ -1,7 +1,6 @@
 "use server"
 
 import { cookies } from "next/headers"
-
 import { auth } from "@/lib/auth"
 
 const AUTH_VERIFICATION_EMAIL_COOKIE = "auth_verification_email"
@@ -33,7 +32,7 @@ export async function sendEmailVerificationOtp(email: string) {
       message:
         error instanceof Error
           ? error.message
-          : "Unable to send verification code.",
+          : "Unable to send the verification code. Please try again.",
     }
   }
 }

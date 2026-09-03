@@ -4,9 +4,13 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
@@ -54,7 +58,6 @@ export function EmailAuthForm() {
 
   const onSubmit = async ({ email }: EmailInput) => {
     form.clearErrors("root")
-
     const result = await sendEmailVerificationOtp(email)
 
     if (!result.success) {
@@ -65,7 +68,7 @@ export function EmailAuthForm() {
       return
     }
 
-    router.push("/auth/verify-email")
+    router.push("/email-verification")
   }
 
   const handleGoogleSignIn = async () => {
@@ -80,7 +83,8 @@ export function EmailAuthForm() {
       setIsGoogleLoading(false)
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to continue with Google.",
+        message:
+          error.message || "Unable to continue with Google. Please try again.",
       })
     }
   }
@@ -97,7 +101,8 @@ export function EmailAuthForm() {
       setIsGithubLoading(false)
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to continue with GitHub.",
+        message:
+          error.message || "Unable to continue with GitHub. Please try again.",
       })
     }
   }
@@ -120,7 +125,8 @@ export function EmailAuthForm() {
       setIsPasskeyLoading(false)
       form.setError("root", {
         type: "server",
-        message: error.message || "Unable to continue with passkey.",
+        message:
+          error.message || "Unable to continue with passkey. Please try again.",
       })
     }
   }
@@ -135,66 +141,50 @@ export function EmailAuthForm() {
     isSubmitting || isGoogleLoading || isGithubLoading || isPasskeyLoading
 
   return (
-    <div className="w-full max-w-85 space-y-4">
-      <Button
-        type="button"
-        variant="outline"
-        className="h-13 w-full rounded-full text-base"
-        onClick={handleGoogleSignIn}
-        disabled={isLoading}
-      >
-        {isGoogleLoading ? (
-          <>
-            <Spinner />
-            Continue with Google
-          </>
-        ) : (
-          "Continue with Google"
-        )}
-      </Button>
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-13 w-full rounded-full text-base font-normal"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+        >
+          {isGoogleLoading && <Spinner />}
+          Continue with Google
+        </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="h-13 w-full rounded-full text-base"
-        onClick={handleGithubSignIn}
-        disabled={isLoading}
-      >
-        {isGithubLoading ? (
-          <>
-            <Spinner />
-            Continue with GitHub
-          </>
-        ) : (
-          "Continue with GitHub"
-        )}
-      </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-13 w-full rounded-full text-base font-normal"
+          onClick={handleGithubSignIn}
+          disabled={isLoading}
+        >
+          {isGithubLoading && <Spinner />}
+          Continue with GitHub
+        </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="h-13 w-full rounded-full text-base"
-        onClick={handlePasskeySignIn}
-        disabled={isLoading}
-      >
-        {isPasskeyLoading ? (
-          <>
-            <Spinner />
-            Continue with passkey
-          </>
-        ) : (
-          "Continue with passkey"
-        )}
-      </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-13 w-full rounded-full text-base font-normal"
+          onClick={handlePasskeySignIn}
+          disabled={isLoading}
+        >
+          {isPasskeyLoading && <Spinner />}
+          Continue with passkey
+        </Button>
+      </div>
 
-      <div className="flex items-center gap-4 text-muted-foreground">
+      <div className="flex items-center gap-6 text-sm text-muted-foreground">
         <Separator className="flex-1" />
         <span>OR</span>
         <Separator className="flex-1" />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <FieldGroup>
+        <FieldGroup className="gap-4">
           <Controller
             name="email"
             control={control}
@@ -204,18 +194,20 @@ export function EmailAuthForm() {
               return (
                 <Field data-invalid={!!showError}>
                   <FieldLabel htmlFor="auth-email" className="sr-only">
-                    Email
+                    Email address
                   </FieldLabel>
                   <Input
                     {...field}
                     id="auth-email"
                     type="email"
-                    placeholder="Email"
-                    className="h-13 w-full rounded-full text-base"
+                    placeholder="Email address"
+                    className="h-13 w-full rounded-full px-5 py-3 text-base"
                     autoComplete="username webauthn"
                     autoFocus
                     aria-invalid={!!showError}
-                    aria-describedby={showError ? "auth-email-error" : undefined}
+                    aria-describedby={
+                      showError ? "auth-email-error" : undefined
+                    }
                     disabled={isLoading}
                   />
                   {showError && (
@@ -234,17 +226,11 @@ export function EmailAuthForm() {
 
           <Button
             type="submit"
-            className="h-13 w-full rounded-full text-base"
+            className="h-13 w-full rounded-full text-base font-normal"
             disabled={isLoading}
           >
-            {isSubmitting ? (
-              <>
-                <Spinner />
-                Continue with email
-              </>
-            ) : (
-              "Continue with email"
-            )}
+            {isSubmitting && <Spinner />}
+            Continue
           </Button>
         </FieldGroup>
       </form>

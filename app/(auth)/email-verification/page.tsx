@@ -28,12 +28,12 @@ export default async function VerifyEmailPage() {
 
   return (
     <>
-      <header className="w-full space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Check your email
+      <header className="space-y-5 text-center">
+        <h1 className="text-3xl">
+          Check your inbox
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter the 6-digit verification code sent to {emailLabel}.
+        <p>
+          Enter the verification code we just sent to {emailLabel} to continue
         </p>
       </header>
 
