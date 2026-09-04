@@ -54,13 +54,13 @@ export function AuthModal() {
         onOpenChange={setOpen}
         onOpenChangeComplete={handleOpenChangeComplete}
       >
-        <DrawerContent className="max-h-[92dvh] px-0">
+        <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none px-0">
           <DrawerClose
             render={
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="absolute top-3 right-3 z-10 rounded-full"
+                className="absolute top-3 right-3 z-20 rounded-full"
                 aria-label="Close authentication"
               />
             }
@@ -75,8 +75,19 @@ export function AuthModal() {
             </DrawerDescription>
           </DrawerHeader>
 
-          <div className="overflow-y-auto px-6 pb-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
             <AuthFlow onAuthenticated={requestClose} />
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <Button
+              type="button"
+              variant="secondary"
+              className="pointer-events-auto h-11 rounded-full px-6 shadow-lg backdrop-blur"
+              onClick={requestClose}
+            >
+              Skip
+            </Button>
           </div>
         </DrawerContent>
       </Drawer>
