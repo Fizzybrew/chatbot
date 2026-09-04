@@ -18,11 +18,13 @@ import { authClient } from "@/lib/auth-client"
 import { emailSchema, type EmailInput } from "@/lib/auth-schemas"
 
 interface EmailAuthFormProps {
+  onEmailChange?: (email: string) => void
   onOtpSent: (email: string) => void
   onAuthenticated?: () => void
 }
 
 export function EmailAuthForm({
+  onEmailChange,
   onOtpSent,
   onAuthenticated,
 }: EmailAuthFormProps) {
@@ -216,6 +218,10 @@ export function EmailAuthForm({
                       showError ? "auth-email-error" : undefined
                     }
                     disabled={isLoading}
+                    onChange={(event) => {
+                      field.onChange(event)
+                      onEmailChange?.(event.target.value)
+                    }}
                   />
                   {showError && (
                     <FieldError id="auth-email-error">
