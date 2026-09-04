@@ -20,6 +20,7 @@ interface OtpFormProps {
   email: string
   onAuthenticated?: () => void
   onChangeEmail: () => void
+  onOtpResent?: () => void
 }
 
 const RESEND_COOLDOWN_SECONDS = 30
@@ -28,6 +29,7 @@ export function OtpForm({
   email,
   onAuthenticated,
   onChangeEmail,
+  onOtpResent,
 }: OtpFormProps) {
   const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS)
   const [isResending, setIsResending] = useState(false)
@@ -90,6 +92,7 @@ export function OtpForm({
 
     setResendCooldown(RESEND_COOLDOWN_SECONDS)
     form.reset({ otp: "" })
+    onOtpResent?.()
   }
 
   const {
