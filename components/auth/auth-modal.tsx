@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { AuthFlow } from "@/components/auth/auth-flow"
@@ -22,9 +23,21 @@ import { useIsMobile } from "@/hooks/use-mobile"
 export function AuthModal() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const [open, setOpen] = useState(false)
 
-  const handleClose = () => {
-    router.back()
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setOpen(true))
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
+  const requestClose = () => {
+    setOpen(false)
+  }
+
+  const handleOpenChangeComplete = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      router.back()
+    }
   }
 
   if (isMobile === null) {
@@ -33,7 +46,11 @@ export function AuthModal() {
 
   if (isMobile) {
     return (
-      <Drawer open onOpenChange={(open) => !open && handleClose()}>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        onOpenChangeComplete={handleOpenChangeComplete}
+      >
         <DrawerContent className="max-h-[92dvh]">
           <DrawerHeader className="sr-only">
             <DrawerTitle>Authentication</DrawerTitle>
@@ -42,7 +59,7 @@ export function AuthModal() {
             </DrawerDescription>
           </DrawerHeader>
           <div className="overflow-y-auto px-6 pb-6">
-            <AuthFlow onAuthenticated={handleClose} />
+            <AuthFlow onAuthenticated={requestClose} />
           </div>
         </DrawerContent>
       </Drawer>
@@ -50,7 +67,11 @@ export function AuthModal() {
   }
 
   return (
-    <Dialog open onOpenChange={(open) => !open && handleClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+      onOpenChangeComplete={handleOpenChangeComplete}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader className="sr-only">
           <DialogTitle>Authentication</DialogTitle>
@@ -58,7 +79,7 @@ export function AuthModal() {
             Sign in or create an account to continue.
           </DialogDescription>
         </DialogHeader>
-        <AuthFlow onAuthenticated={handleClose} />
+        <AuthFlow onAuthenticated={requestClose} />
       </DialogContent>
     </Dialog>
   )
