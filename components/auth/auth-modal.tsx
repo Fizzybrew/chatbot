@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { XIcon } from "lucide-react"
 
 import { AuthFlow } from "@/components/auth/auth-flow"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -51,13 +54,27 @@ export function AuthModal() {
         onOpenChange={setOpen}
         onOpenChangeComplete={handleOpenChangeComplete}
       >
-        <DrawerContent className="max-h-[92dvh]">
+        <DrawerContent className="max-h-[92dvh] px-0">
+          <DrawerClose
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="absolute top-3 right-3 z-10 rounded-full"
+                aria-label="Close authentication"
+              />
+            }
+          >
+            <XIcon />
+          </DrawerClose>
+
           <DrawerHeader className="sr-only">
             <DrawerTitle>Authentication</DrawerTitle>
             <DrawerDescription>
               Sign in or create an account to continue.
             </DrawerDescription>
           </DrawerHeader>
+
           <div className="overflow-y-auto px-6 pb-6">
             <AuthFlow onAuthenticated={requestClose} />
           </div>
