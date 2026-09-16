@@ -1,6 +1,13 @@
-import { customProvider, gateway } from "ai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { customProvider } from "ai";
 import { isTestEnvironment } from "../constants";
 import { titleModel } from "./models";
+
+const routerai = createOpenAICompatible({
+  apiKey: process.env.ROUTER_AI_API_KEY,
+  baseURL: "https://routerai.ru/api/v1",
+  name: "routerai",
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -22,12 +29,13 @@ export function getLanguageModel(modelId: string) {
     return myProvider.languageModel(modelId);
   }
 
-  return gateway.languageModel(modelId);
+  return routerai.languageModel(modelId);
 }
 
 export function getTitleModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("title-model");
   }
-  return gateway.languageModel(titleModel.id);
+
+  return routerai.languageModel(titleModel.id);
 }
