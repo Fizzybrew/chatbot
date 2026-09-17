@@ -296,7 +296,7 @@ export async function POST(request: Request) {
           },
           providerOptions: {
             ...(modelConfig?.reasoningEffort && {
-              openai: { reasoningEffort: modelConfig.reasoningEffort },
+              routerai: { reasoningEffort: modelConfig.reasoningEffort },
             }),
           },
           stopWhen: isStepCount(5),
