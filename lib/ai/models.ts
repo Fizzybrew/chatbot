@@ -1,12 +1,6 @@
 export const DEFAULT_CHAT_MODEL = "moonshotai/kimi-k2.5";
 
-export const titleModel = {
-  description: "Fast model for title generation",
-  gatewayOrder: ["fireworks", "bedrock"],
-  id: "moonshotai/kimi-k2.5",
-  name: "Kimi K2.5",
-  provider: "moonshotai",
-};
+export type ReasoningEffort = "none" | "minimal" | "low" | "medium" | "high";
 
 export type ModelCapabilities = {
   tools: boolean;
@@ -19,28 +13,31 @@ export type ChatModel = {
   name: string;
   provider: string;
   description: string;
-  gatewayOrder?: string[];
-  reasoningEffort?: "none" | "minimal" | "low" | "medium" | "high";
+  reasoningEffort?: ReasoningEffort;
+};
+
+export const titleModel: ChatModel = {
+  description: "Fast model for title generation",
+  id: DEFAULT_CHAT_MODEL,
+  name: "Kimi K2.5",
+  provider: "moonshotai",
 };
 
 export const chatModels: ChatModel[] = [
   {
     description: "Fast and capable model with tool use",
-    gatewayOrder: ["bedrock", "deepinfra"],
     id: "deepseek/deepseek-v3.2",
     name: "DeepSeek V3.2",
     provider: "deepseek",
   },
   {
     description: "Moonshot AI flagship model",
-    gatewayOrder: ["fireworks", "bedrock"],
     id: "moonshotai/kimi-k2.5",
     name: "Kimi K2.5",
     provider: "moonshotai",
   },
   {
     description: "Compact reasoning model",
-    gatewayOrder: ["groq", "bedrock"],
     id: "openai/gpt-oss-20b",
     name: "GPT OSS 20B",
     provider: "openai",
@@ -48,57 +45,144 @@ export const chatModels: ChatModel[] = [
   },
   {
     description: "Open-source 120B parameter model",
-    gatewayOrder: ["fireworks", "bedrock"],
     id: "openai/gpt-oss-120b",
     name: "GPT OSS 120B",
     provider: "openai",
     reasoningEffort: "low",
   },
-  {
-    description: "Fast non-reasoning model with tool use",
-    gatewayOrder: ["xai"],
-    id: "xai/grok-4.1-fast-non-reasoning",
-    name: "Grok 4.1 Fast",
-    provider: "xai",
-  },
 ];
+
+type RouterAIPricingUnit =
+  | "token"
+  | "request"
+  | "image"
+  | "megapixel"
+  | "second"
+  | "search_unit";
+
+type RouterAIArchitecture = {
+  modality?: string;
+  input_modalities?: string[];
+  output_modalities?: string[];
+  tokenizer?: string;
+};
+
+type RouterAIImagePricing = {
+  unit: "image" | "megapixel" | "token";
+  variant: string | null;
+  price: number;
+};
+
+type RouterAIModel = {
+  id: string;
+  name: string;
+  created: number;
+  description: string;
+  context_length: number;
+  architecture: RouterAIArchitecture;
+  pricing: Record<string, number>;
+  pricing_units: Record<string, RouterAIPricingUnit>;
+  supported_parameters: string[];
+  default_parameters: Record<string, unknown>;
+  image_pricing?: RouterAIImagePricing[];
+  per_request_limits?: Record<string, unknown>;
+};
+
+type RouterAIModelsResponse = {
+  data: RouterAIModel[];
+};
+
+type RouterAIEndpoint = {
+  name: string;
+  provider_name: string;
+  tag: string;
+  country: string | null;
+  context_length: number | null;
+  quantization?: string;
+  max_completion_tokens: number | null;
+  max_prompt_tokens?: number;
+  supported_parameters: string[] | null;
+  supported_apis: string[];
+  status: number;
+  pricing: Record<string, number>;
+  pricing_units: Record<string, RouterAIPricingUnit>;
+  variable_pricings: Record<string, unknown>[];
+};
+
+type RouterAIModelEndpoints = {
+  id: string;
+  name: string;
+  created: number;
+  description: string;
+  architecture: RouterAIArchitecture;
+  endpoints: RouterAIEndpoint[];
+};
+
+type RouterAIModelEndpointsResponse = {
+  data: RouterAIModelEndpoints;
+};
+
+function getRouterAIModelEndpointsUrl(modelId: string): string {
+  const [author, slug] = modelId.split("/");
+
+  if (!author || !slug) {
+    throw new Error(`Invalid model ID: ${modelId}`);
+  }
+
+  return `https://routerai.ru/api/v1/models/${author}/${slug}/endpoints`;
+}
 
 export async function getCapabilities(): Promise<
   Record<string, ModelCapabilities>
 > {
   const results = await Promise.all(
-    chatModels.map(async (model) => {
+    chatModels.map(async (model): Promise<[string, ModelCapabilities]> => {
       try {
-        const res = await fetch(
-          `https://ai-gateway.vercel.sh/v1/models/${model.id}/endpoints`,
-          { next: { revalidate: 86_400 } }
-        );
+        const res = await fetch(getRouterAIModelEndpointsUrl(model.id), {
+          next: { revalidate: 86_400 },
+        });
+
         if (!res.ok) {
-          return [model.id, { reasoning: false, tools: false, vision: false }];
+          return [
+            model.id,
+            {
+              reasoning: false,
+              tools: false,
+              vision: false,
+            },
+          ];
         }
 
-        const json = await res.json();
-        const endpoints = json.data?.endpoints ?? [];
+        const json = (await res.json()) as RouterAIModelEndpointsResponse;
+
+        const { endpoints } = json.data;
+
         const params = new Set(
-          endpoints.flatMap(
-            (e: { supported_parameters?: string[] }) =>
-              e.supported_parameters ?? []
-          )
+          endpoints.flatMap((endpoint) => endpoint.supported_parameters ?? [])
         );
+
         const inputModalities = new Set(
-          json.data?.architecture?.input_modalities ?? []
+          json.data.architecture.input_modalities ?? []
         );
 
         return [
           model.id,
           {
-            reasoning: params.has("reasoning"),
+            reasoning:
+              params.has("reasoning") || params.has("reasoning_effort"),
             tools: params.has("tools"),
             vision: inputModalities.has("image"),
           },
         ];
       } catch {
-        return [model.id, { reasoning: false, tools: false, vision: false }];
+        return [
+          model.id,
+          {
+            reasoning: false,
+            tools: false,
+            vision: false,
+          },
+        ];
       }
     })
   );
@@ -108,42 +192,42 @@ export async function getCapabilities(): Promise<
 
 export const isDemo = process.env.IS_DEMO === "1";
 
-type GatewayModel = {
-  id: string;
-  name: string;
-  type?: string;
-  tags?: string[];
-};
-
-export type GatewayModelWithCapabilities = ChatModel & {
+export type RouterAIModelWithCapabilities = ChatModel & {
   capabilities: ModelCapabilities;
 };
 
-export async function getAllGatewayModels(): Promise<
-  GatewayModelWithCapabilities[]
+export async function getAllRouterAIModels(): Promise<
+  RouterAIModelWithCapabilities[]
 > {
   try {
-    const res = await fetch("https://ai-gateway.vercel.sh/v1/models", {
+    const res = await fetch("https://routerai.ru/api/v1/models", {
       next: { revalidate: 86_400 },
     });
+
     if (!res.ok) {
       return [];
     }
 
-    const json = await res.json();
-    return (json.data ?? [])
-      .filter((m: GatewayModel) => m.type === "language")
-      .map((m: GatewayModel) => ({
-        capabilities: {
-          reasoning: m.tags?.includes("reasoning") ?? false,
-          tools: m.tags?.includes("tool-use") ?? false,
-          vision: m.tags?.includes("vision") ?? false,
-        },
-        description: "",
-        id: m.id,
-        name: m.name,
-        provider: m.id.split("/")[0],
-      }));
+    const json = (await res.json()) as RouterAIModelsResponse;
+
+    return json.data
+      .filter((model) => model.architecture.output_modalities?.includes("text"))
+      .map(
+        (model): RouterAIModelWithCapabilities => ({
+          capabilities: {
+            reasoning:
+              model.supported_parameters.includes("reasoning") ||
+              model.supported_parameters.includes("reasoning_effort"),
+            tools: model.supported_parameters.includes("tools"),
+            vision:
+              model.architecture.input_modalities?.includes("image") ?? false,
+          },
+          description: model.description,
+          id: model.id,
+          name: model.name,
+          provider: model.id.split("/")[0],
+        })
+      );
   } catch {
     return [];
   }
@@ -153,48 +237,25 @@ export function getActiveModels(): ChatModel[] {
   return chatModels;
 }
 
-export const allowedModelIds = new Set(chatModels.map((m) => m.id));
+export const allowedModelIds = new Set(chatModels.map((model) => model.id));
 
-export const modelsByProvider = chatModels.reduce(
+export const modelsByProvider = chatModels.reduce<Record<string, ChatModel[]>>(
   (acc, model) => {
     if (!acc[model.provider]) {
       acc[model.provider] = [];
     }
+
     acc[model.provider].push(model);
+
     return acc;
   },
-  {} as Record<string, ChatModel[]>
+  {}
 );
 
 export type ModelAvailability = "healthy" | "impacted" | "unknown";
 
-type GatewayEndpoint = {
-  provider_name?: string;
-  status?: number;
-  uptime_last_15m?: number;
-  uptime_last_1h?: number;
-  latency_last_1h?: {
-    p50?: number;
-    p95?: number;
-  };
-};
-
-const PROVIDER_IMPACTED_UPTIME_THRESHOLD = 99;
-const PROVIDER_IMPACTED_P50_MS = 10_000;
-const PROVIDER_IMPACTED_P95_MS = 30_000;
-
-function isEndpointImpacted(endpoint: GatewayEndpoint) {
-  return (
-    (endpoint.status !== undefined && endpoint.status !== 0) ||
-    (endpoint.uptime_last_15m !== undefined &&
-      endpoint.uptime_last_15m < PROVIDER_IMPACTED_UPTIME_THRESHOLD) ||
-    (endpoint.uptime_last_1h !== undefined &&
-      endpoint.uptime_last_1h < PROVIDER_IMPACTED_UPTIME_THRESHOLD) ||
-    (endpoint.latency_last_1h?.p50 !== undefined &&
-      endpoint.latency_last_1h.p50 > PROVIDER_IMPACTED_P50_MS) ||
-    (endpoint.latency_last_1h?.p95 !== undefined &&
-      endpoint.latency_last_1h.p95 > PROVIDER_IMPACTED_P95_MS)
-  );
+function isEndpointImpacted(endpoint: RouterAIEndpoint): boolean {
+  return endpoint.status < 0;
 }
 
 export async function getModelAvailability(
@@ -207,16 +268,17 @@ export async function getModelAvailability(
   }
 
   try {
-    const res = await fetch(
-      `https://ai-gateway.vercel.sh/v1/models/${model.id}/endpoints`,
-      { next: { revalidate: 60 } }
-    );
+    const res = await fetch(getRouterAIModelEndpointsUrl(model.id), {
+      next: { revalidate: 60 },
+    });
+
     if (!res.ok) {
       return "unknown";
     }
 
-    const json = await res.json();
-    const endpoints = (json.data?.endpoints ?? []) as GatewayEndpoint[];
+    const json = (await res.json()) as RouterAIModelEndpointsResponse;
+
+    const { endpoints } = json.data;
 
     if (endpoints.length === 0) {
       return "unknown";
