@@ -13,6 +13,7 @@ export const initialArtifactData: UIArtifact = {
   },
   content: "",
   documentId: "init",
+  isFullscreen: false,
   isVisible: false,
   kind: "text",
   status: "idle",

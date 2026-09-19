@@ -41,6 +41,9 @@ export function ChatShell() {
   );
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const isArtifactFullscreen = useArtifactSelector(
+    (state) => state.isFullscreen
+  );
   const { setArtifact } = useArtifact();
 
   const stopRef = useRef(stop);
@@ -92,11 +95,15 @@ export function ChatShell() {
 
   return (
     <>
-      <div className="flex h-dvh w-full flex-row overflow-hidden">
+      <div className="relative flex h-dvh w-full flex-row overflow-hidden">
         <div
           className={cn(
-            "flex min-w-0 flex-col bg-sidebar transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-            isArtifactVisible ? "w-[40%]" : "w-full"
+            "relative min-w-0 flex flex-col transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            isArtifactFullscreen
+              ? "w-0"
+              : isArtifactVisible
+                ? "w-[40%]"
+                : "w-full"
           )}
         >
           <ChatHeader

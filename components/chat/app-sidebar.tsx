@@ -28,10 +28,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useArtifactSelector } from "@/hooks/use-artifact";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,7 +41,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -57,6 +55,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const handleToggleSidebar = useCallback(() => {
     toggleSidebar();
   }, [toggleSidebar]);
+
+  const isArtifactFullscreen = useArtifactSelector(
+    (state) => state.isFullscreen
+  );
 
   const handleNewChat = useCallback(() => {
     setOpenMobile(false);
@@ -83,63 +85,61 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 
   return (
     <>
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="pb-0 pt-3">
+      <Sidebar
+        collapsible="icon"
+        variant={isArtifactFullscreen ? "sidebar" : "floating"}
+      >
+        <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem className="flex flex-row items-center justify-between">
               <div className="group/logo relative flex items-center justify-center">
-                <SidebarMenuButton
-                  asChild
-                  className="size-8 !px-0 items-center justify-center group-data-[collapsible=icon]:group-hover/logo:opacity-0"
-                  tooltip="Chatbot"
-                >
+                <SidebarMenuButton asChild tooltip="Chatbot">
                   <Link href="/" onClick={closeMobile}>
-                    <MessageSquareIcon className="size-4 text-sidebar-foreground/50" />
+                    <MessageSquareIcon />
                   </Link>
                 </SidebarMenuButton>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      className="pointer-events-none absolute inset-0 size-8 opacity-0 group-data-[collapsible=icon]:pointer-events-auto group-data-[collapsible=icon]:group-hover/logo:opacity-100"
-                      onClick={handleToggleSidebar}
-                    >
-                      <PanelLeftIcon className="size-4" />
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent className="hidden md:block" side="right">
-                    Open sidebar
-                  </TooltipContent>
-                </Tooltip>
+                <SidebarMenuButton
+                  className="pointer-events-none absolute inset-0 opacity-0 group-data-[collapsible=icon]:pointer-events-auto group-data-[collapsible=icon]:group-hover/logo:opacity-100"
+                  onClick={handleToggleSidebar}
+                  tooltip="Open sidebar"
+                >
+                  <PanelLeftIcon />
+                </SidebarMenuButton>
               </div>
               <div className="group-data-[collapsible=icon]:hidden">
-                <SidebarTrigger className="text-sidebar-foreground/60 transition-colors duration-150 hover:text-sidebar-foreground" />
+                <SidebarMenuButton
+                  onClick={handleToggleSidebar}
+                  tooltip="Close sidebar"
+                  tooltipAlways
+                >
+                  <PanelLeftIcon />
+                </SidebarMenuButton>
               </div>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup className="pt-1">
+          <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    className="h-8 rounded-lg border border-sidebar-border text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                     onClick={handleNewChat}
                     tooltip="New Chat"
+                    variant="outline"
                   >
-                    <PenSquareIcon className="size-4" />
-                    <span className="font-medium">New chat</span>
+                    <PenSquareIcon />
+                    <span>New chat</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {user ? (
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      className="rounded-lg text-sidebar-foreground/40 transition-colors duration-150 hover:bg-destructive/10 hover:text-destructive"
                       onClick={handleShowDeleteAllDialog}
                       tooltip="Delete All Chats"
                     >
-                      <TrashIcon className="size-4" />
-                      <span className="text-[13px]">Delete all</span>
+                      <TrashIcon />
+                      <span>Delete all</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ) : null}
@@ -148,10 +148,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </SidebarGroup>
           <SidebarHistory user={user} />
         </SidebarContent>
-        <SidebarFooter className="border-t border-sidebar-border pt-2 pb-3">
+        <SidebarFooter>
           {user ? <SidebarUserNav user={user} /> : null}
         </SidebarFooter>
-        <SidebarRail />
       </Sidebar>
 
       <AlertDialog
