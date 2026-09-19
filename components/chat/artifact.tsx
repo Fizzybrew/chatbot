@@ -20,10 +20,10 @@ import { textArtifact } from "@/artifacts/text/client";
 import { useArtifact } from "@/hooks/use-artifact";
 import type { Document, Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
-import { fetcher } from "@/lib/utils";
-import { useSidebar } from "../ui/sidebar";
+import { cn, fetcher } from "@/lib/utils";
 import { ArtifactActions } from "./artifact-actions";
 import { ArtifactCloseButton } from "./artifact-close-button";
+import { ArtifactFullScreenButton } from "./artifact-full-screen-button";
 import { LoaderIcon } from "./icons";
 import { Toolbar } from "./toolbar";
 import { VersionFooter } from "./version-footer";
@@ -43,6 +43,7 @@ export type UIArtifact = {
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
+  isFullscreen: boolean;
   status: "streaming" | "idle";
   boundingBox: {
     top: number;
@@ -103,8 +104,6 @@ function PureArtifact({
   const [mode, setMode] = useState<"edit" | "diff">("edit");
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-
-  const { state: sidebarState } = useSidebar();
   const artifactContentRef = useRef<HTMLDivElement>(null);
   const userScrolledArtifact = useRef(false);
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -276,7 +275,11 @@ function PureArtifact({
   }, []);
 
   const handleClose = useCallback(() => {
-    setArtifact((prev) => ({ ...prev, isVisible: false }));
+    setArtifact((prev) => ({
+      ...prev,
+      isFullscreen: false,
+      isVisible: false,
+    }));
   }, [setArtifact]);
 
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
@@ -329,46 +332,47 @@ function PureArtifact({
 
   const artifactPanel = (
     <>
-      {sidebarState !== "collapsed" && (
-        <div className="flex h-[calc(3.5rem+1px)] shrink-0 items-center justify-between border-b border-border/50 px-4">
-          <div className="flex items-center gap-3">
-            <ArtifactCloseButton />
-            <div className="flex flex-col gap-0.5">
-              <div className="text-sm font-semibold leading-tight tracking-tight">
-                {artifact.title}
-              </div>
-              <div className="flex items-center gap-2">
-                {isContentDirty ? (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <div className="size-1.5 animate-pulse rounded-full bg-amber-500" />
-                    Saving...
+      <div className="flex h-13 shrink-0 items-center justify-between bg-secondary px-2.5">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-0.5">
+            <div className="text-sm font-semibold leading-tight tracking-tight">
+              {artifact.title}
+            </div>
+            <div className="flex items-center gap-2">
+              {isContentDirty ? (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="size-1.5 animate-pulse rounded-full bg-amber-500" />
+                  Saving...
+                </div>
+              ) : document ? (
+                <div className="text-xs text-muted-foreground">
+                  {`Updated ${formatDistance(new Date(document.createdAt), new Date(), { addSuffix: true })}`}
+                </div>
+              ) : artifact.status === "streaming" ? (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="animate-spin">
+                    <LoaderIcon size={12} />
                   </div>
-                ) : document ? (
-                  <div className="text-xs text-muted-foreground">
-                    {`Updated ${formatDistance(new Date(document.createdAt), new Date(), { addSuffix: true })}`}
-                  </div>
-                ) : artifact.status === "streaming" ? (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <div className="animate-spin">
-                      <LoaderIcon size={12} />
-                    </div>
-                    Generating...
-                  </div>
-                ) : (
-                  <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/10" />
-                )}
-                {documents && documents.length > 1 && (
-                  <div className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
-                    v{currentVersionIndex + 1}/{documents.length}
-                  </div>
-                )}
-              </div>
+                  Generating...
+                </div>
+              ) : (
+                <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/10" />
+              )}
+              {documents && documents.length > 1 && (
+                <div className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                  v{currentVersionIndex + 1}/{documents.length}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      )}
+        <div className="flex gap-2">
+          <ArtifactFullScreenButton />
+          <ArtifactCloseButton />
+        </div>
+      </div>
       <div
-        className="relative flex-1 overflow-y-auto bg-background"
+        className="relative flex-1 overflow-y-auto bg-secondary"
         data-slot="artifact-content"
         onScroll={handleArtifactScroll}
         ref={artifactContentRef}
@@ -465,7 +469,12 @@ function PureArtifact({
 
   return (
     <div
-      className="flex h-dvh w-[60%] shrink-0 flex-col overflow-hidden border-l border-border/50 bg-sidebar transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+      className={cn(
+        "flex shrink-0 flex-col overflow-hidden bg-secondary transition-[width,height,margin,border-radius,border] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        artifact.isFullscreen
+          ? "h-dvh w-full rounded-none border-0"
+          : "m-2 h-[calc(100dvh-1rem)] w-[calc(60%-1rem)] rounded-lg border border-border"
+      )}
       data-testid="artifact"
     >
       {artifactPanel}
