@@ -112,47 +112,45 @@ export function ChatShell() {
             selectedVisibilityType={visibilityType}
           />
 
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background md:rounded-tl-[12px] md:border-t md:border-l md:border-border/40">
-            <Messages
-              addToolApprovalResponse={addToolApprovalResponse}
-              chatId={chatId}
-              isArtifactVisible={isArtifactVisible}
-              isLoading={isLoading}
-              isReadonly={isReadonly}
-              messages={messages}
-              onEditMessage={handleEditMessage}
-              regenerate={regenerate}
-              selectedModelId={currentModelId}
-              setMessages={setMessages}
-              status={status}
-              votes={votes}
-            />
+          <Messages
+            addToolApprovalResponse={addToolApprovalResponse}
+            chatId={chatId}
+            isArtifactVisible={isArtifactVisible}
+            isLoading={isLoading}
+            isReadonly={isReadonly}
+            messages={messages}
+            onEditMessage={handleEditMessage}
+            regenerate={regenerate}
+            selectedModelId={currentModelId}
+            setMessages={setMessages}
+            status={status}
+            votes={votes}
+          />
 
-            <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
-              {!isReadonly && (
-                <MultimodalInput
-                  attachments={attachments}
-                  chatId={chatId}
-                  editingMessage={editingMessage}
-                  input={input}
-                  isLoading={isLoading}
-                  messages={messages}
-                  onCancelEdit={handleCancelEdit}
-                  onModelChange={setCurrentModelId}
-                  selectedModelId={currentModelId}
-                  selectedVisibilityType={visibilityType}
-                  sendMessage={
-                    editingMessage ? handleSendEditedMessage : sendMessage
-                  }
-                  setAttachments={setAttachments}
-                  setInput={setInput}
-                  setMessages={setMessages}
-                  status={status}
-                  stop={stop}
-                />
-              )}
+          {!isReadonly && (
+            <div className="absolute bottom-6 left-0 right-0 z-10 px-6 max-w-3xl mx-auto">
+              <MultimodalInput
+                attachments={attachments}
+                chatId={chatId}
+                editingMessage={editingMessage}
+                input={input}
+                isLoading={isLoading}
+                messages={messages}
+                onCancelEdit={handleCancelEdit}
+                onModelChange={setCurrentModelId}
+                selectedModelId={currentModelId}
+                selectedVisibilityType={visibilityType}
+                sendMessage={
+                  editingMessage ? handleSendEditedMessage : sendMessage
+                }
+                setAttachments={setAttachments}
+                setInput={setInput}
+                setMessages={setMessages}
+                status={status}
+                stop={stop}
+              />
             </div>
-          </div>
+          )}
         </div>
 
         <Artifact
