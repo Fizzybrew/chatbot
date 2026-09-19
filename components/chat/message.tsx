@@ -3,8 +3,11 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { useCallback } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
-import { cn, sanitizeText } from "@/lib/utils";
-import { MessageContent, MessageResponse } from "../ai-elements/message";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "../ai-elements/message";
 import { Shimmer } from "../ai-elements/shimmer";
 import {
   Tool,
@@ -13,10 +16,10 @@ import {
   ToolInput,
   ToolOutput,
 } from "../ai-elements/tool";
+import { Button } from "../ui/button";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
-import { SparklesIcon } from "./icons";
 import { MessageActions } from "./message-actions";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
@@ -26,17 +29,7 @@ function WaitingText() {
   const { waitingStatus } = useDataStream();
   const waitingText = waitingStatus?.message ?? "Waiting...";
 
-  return (
-    <div className="flex min-h-[calc(13px*1.65)] min-w-0 items-center text-[13px] leading-[1.65]">
-      <Shimmer
-        as="span"
-        className="font-medium whitespace-normal break-words"
-        duration={1}
-      >
-        {waitingText}
-      </Shimmer>
-    </div>
-  );
+  return <Shimmer duration={1}>{waitingText}</Shimmer>;
 }
 
 function ToolApprovalActions({
@@ -63,20 +56,12 @@ function ToolApprovalActions({
 
   return (
     <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
-      <button
-        className="rounded-md px-3 py-1.5 text-muted-foreground text-sm transition-colors hover:bg-muted hover:text-foreground"
-        onClick={handleDeny}
-        type="button"
-      >
+      <Button onClick={handleDeny} type="button">
         Deny
-      </button>
-      <button
-        className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-sm transition-colors hover:bg-primary/90"
-        onClick={handleAllow}
-        type="button"
-      >
+      </Button>
+      <Button onClick={handleAllow} type="button">
         Allow
-      </button>
+      </Button>
     </div>
   );
 }
@@ -108,9 +93,6 @@ const PurePreviewMessage = ({
     (part) => part.type === "file"
   );
 
-  useDataStream();
-
-  const isUser = message.role === "user";
   const isAssistant = message.role === "assistant";
 
   const hasAnyContent = message.parts?.some(
@@ -175,15 +157,8 @@ const PurePreviewMessage = ({
 
     if (type === "text") {
       return (
-        <MessageContent
-          className={cn("text-[13px] leading-[1.65]", {
-            "w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg border border-border/30 bg-gradient-to-br from-secondary to-muted px-3.5 py-2 shadow-[var(--shadow-card)]":
-              message.role === "user",
-          })}
-          data-testid="message-content"
-          key={key}
-        >
-          <MessageResponse>{sanitizeText(part.text)}</MessageResponse>
+        <MessageContent data-testid="message-content" key={key}>
+          <MessageResponse>{part.text}</MessageResponse>
         </MessageContent>
       );
     }
@@ -363,52 +338,25 @@ const PurePreviewMessage = ({
   );
 
   return (
-    <div
-      className={cn(
-        "group/message w-full",
-        !isAssistant && "animate-[fade-up_0.25s_cubic-bezier(0.22,1,0.36,1)]"
-      )}
+    <Message
+      className="group/message"
       data-role={message.role}
       data-testid={`message-${message.role}`}
+      from={message.role}
     >
-      <div
-        className={cn(
-          isUser ? "flex flex-col items-end gap-2" : "flex items-start gap-3"
-        )}
-      >
-        {isAssistant && (
-          <div className="flex h-[calc(13px*1.65)] shrink-0 items-center">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground ring-1 ring-border/50">
-              <SparklesIcon size={13} />
-            </div>
-          </div>
-        )}
-        {isAssistant ? (
-          <div className="flex min-w-0 flex-1 flex-col gap-2">{content}</div>
-        ) : (
-          content
-        )}
-      </div>
-    </div>
+      {content}
+    </Message>
   );
 };
 
 export const PreviewMessage = PurePreviewMessage;
 
 export const ThinkingMessage = () => (
-  <div
-    className="group/message w-full"
+  <Message
     data-role="assistant"
     data-testid="message-assistant-loading"
+    from="assistant"
   >
-    <div className="flex items-start gap-3">
-      <div className="flex h-[calc(13px*1.65)] shrink-0 items-center">
-        <div className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground ring-1 ring-border/50">
-          <SparklesIcon size={13} />
-        </div>
-      </div>
-
-      <WaitingText />
-    </div>
-  </div>
+    <WaitingText />
+  </Message>
 );

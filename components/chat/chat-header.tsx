@@ -15,18 +15,14 @@ function PureChatHeader({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { state, toggleSidebar, isMobile } = useSidebar();
-
-  if (state === "collapsed" && !isMobile) {
-    return null;
-  }
+  const { toggleSidebar } = useSidebar();
 
   return (
-    <header className="sticky top-0 flex h-14 items-center gap-2 bg-sidebar px-3">
+    <header className="absolute top-0 right-0 left-0 z-10 px-2.5 py-4 flex items-center justify-between pointer-events-none">
       <Button
-        className="md:hidden"
+        className="md:hidden pointer-events-auto"
         onClick={toggleSidebar}
-        size="icon-sm"
+        size="icon"
         variant="ghost"
       >
         <PanelLeftIcon className="size-4" />
@@ -35,6 +31,7 @@ function PureChatHeader({
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
+          className="pointer-events-auto"
           selectedVisibilityType={selectedVisibilityType}
         />
       )}

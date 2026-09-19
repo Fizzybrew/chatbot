@@ -139,22 +139,24 @@ export function PureMessageActions({
 
   if (message.role === "user") {
     return (
-      <Actions className="-mr-0.5 justify-end opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
+      <Actions className="justify-end opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
         <div className="flex items-center gap-0.5">
           {onEdit ? (
             <Action
-              className="size-7 text-muted-foreground/50 hover:text-foreground"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               data-testid="message-edit-button"
               onClick={onEdit}
               tooltip="Edit"
+              variant="ghost"
             >
               <PencilEditIcon />
             </Action>
           ) : null}
           <Action
-            className="size-7 text-muted-foreground/50 hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
             onClick={handleCopy}
             tooltip="Copy"
+            variant="ghost"
           >
             <CopyIcon />
           </Action>
@@ -164,31 +166,34 @@ export function PureMessageActions({
   }
 
   return (
-    <Actions className="-ml-0.5 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
+    <Actions className="opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
       <Action
-        className="text-muted-foreground/50 hover:text-foreground"
+        className="text-muted-foreground transition-colors hover:text-foreground"
         onClick={handleCopy}
         tooltip="Copy"
+        variant="ghost"
       >
         <CopyIcon />
       </Action>
 
       <Action
-        className="text-muted-foreground/50 hover:text-foreground"
+        className="text-muted-foreground transition-colors hover:text-foreground"
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={handleUpvote}
         tooltip="Upvote Response"
+        variant="ghost"
       >
         <ThumbUpIcon />
       </Action>
 
       <Action
-        className="text-muted-foreground/50 hover:text-foreground"
+        className="text-muted-foreground transition-colors hover:text-foreground"
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
         onClick={handleDownvote}
         tooltip="Downvote Response"
+        variant="ghost"
       >
         <ThumbDownIcon />
       </Action>

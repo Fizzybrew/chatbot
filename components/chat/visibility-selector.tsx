@@ -114,9 +114,8 @@ export function VisibilitySelector({
         )}
       >
         <Button
-          className="gap-1.5 rounded-lg border-border/50 text-muted-foreground shadow-none transition-colors hover:text-foreground focus-visible:ring-0 focus-visible:border-border/50 active:translate-y-0"
+          className="rounded-lg"
           data-testid="visibility-selector"
-          size="sm"
           variant="outline"
         >
           {selectedVisibility?.icon}

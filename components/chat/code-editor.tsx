@@ -126,10 +126,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
   }, [content, status]);
 
   return (
-    <div
-      className="not-prose relative w-full min-h-[300px] pb-[calc(50dvh)]"
-      ref={containerRef}
-    />
+    <div className="not-prose relative w-full min-h-75" ref={containerRef} />
   );
 }
 
